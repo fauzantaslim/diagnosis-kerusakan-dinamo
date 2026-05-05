@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col min-h-screen">
+    <!-- Navbar Component -->
+    <header class="border-b border-industrial-800 bg-industrial-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl w-full mx-auto px-8 lg:px-12 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-neon-cyan text-industrial-900 flex items-center justify-center font-display font-bold text-xl rotate-45">
+                    <span class="-rotate-45">D</span>
+                </div>
+                <nav class="ml-8 hidden md:flex space-x-8 text-sm font-mono tracking-widest uppercase">
+                    <a href="#" class="text-neon-cyan border-b-2 border-neon-cyan pb-1">Home</a>
+                    <a href="#" class="text-industrial-100/60 hover:text-industrial-100 transition-colors">Identifikasi</a>
+                    <a href="#" class="text-industrial-100/60 hover:text-industrial-100 transition-colors">Riwayat</a>
+                </nav>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full border border-neon-cyan/50 flex items-center justify-center font-mono text-xs text-neon-cyan bg-industrial-800">
+                        {% set initials = current_user.nama_lengkap.split() %}
+                        {% if initials|length > 1 %}
+                            {{ initials[0][0]|upper }}{{ initials[1][0]|upper }}
+                        {% else %}
+                            {{ initials[0][:2]|upper }}
+                        {% endif %}
+                    </div>
+                    <span class="font-mono text-xs tracking-wider hidden sm:block">Halo: {{ current_user.nama_lengkap.split()[0] | upper }}</span>
+                </div>
+                <a href="{{ url_for('main_bp.logout') }}" class="font-mono text-xs px-4 py-2 border border-industrial-800 text-industrial-100/70 hover:text-neon-cyan hover:border-neon-cyan/50 transition-all uppercase tracking-widest">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow flex flex-col max-w-7xl w-full mx-auto px-8 lg:px-12 py-8 lg:py-12">
+        {% block app_content %}{% endblock %}
+    </div>
+
+    <!-- Footer Component -->
+    <footer class="border-t border-industrial-800 mt-auto bg-industrial-900/80">
+        <div class="max-w-7xl w-full mx-auto px-8 lg:px-12 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">
+                © 2026 Sistem Diagnosis Dinamo Industri
+            </div>
+        </div>
+    </footer>
+</div>
+{% endblock %}

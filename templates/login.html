@@ -1,0 +1,43 @@
+{% extends 'auth_layout.html' %}
+{% import 'components.html' as components %}
+
+
+{% block auth_title %}
+SYSTEM<br>ACCESS
+{% endblock %}
+
+{% block auth_description %}
+Sistem Diagnosis Kerusakan Dinamo Industri. Masukkan kredensial yang sah untuk mengakses instrumen diagnostik dan data histori pemeliharaan.
+{% endblock %}
+
+{% block auth_status %}
+<span class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse"></span>
+STATUS: SECURE CONNECTION ESTABLISHED
+{% endblock %}
+
+{% block auth_form %}
+<div class="mb-10">
+    <h2 class="text-3xl font-display font-bold text-industrial-100 uppercase tracking-wide">SELAMAT DATANG</h2>
+    <p class="mt-2 text-sm font-mono text-industrial-100/60 uppercase tracking-wider">Silahkan login untuk melanjutkan</p>
+    <div class="w-16 h-1 bg-neon-cyan mt-4"></div>
+</div>
+
+<form action="{{ url_for('main_bp.login') }}" method="POST" class="space-y-6">
+    {{ components.input('username', 'Username') }}
+    {{ components.input('password', 'Password', type='password') }}
+    
+    <div class="pt-2">
+        {{ components.button('Login') }}
+    </div>
+</form>
+
+<div class="mt-12 flex items-center justify-center gap-4">
+    <div class="h-px bg-industrial-800 flex-grow"></div>
+    <span class="font-mono text-xs text-industrial-100/50 tracking-widest uppercase">Atau</span>
+    <div class="h-px bg-industrial-800 flex-grow"></div>
+</div>
+
+<p class="text-center mt-8 font-mono text-sm text-industrial-100/70">
+    Belum memiliki akun? <a href="{{ url_for('main_bp.register') }}" class="text-neon-cyan hover:text-white transition-colors border-b border-neon-cyan/30 hover:border-white pb-0.5">Daftar Disini</a>
+</p>
+{% endblock %}

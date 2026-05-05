@@ -1,0 +1,96 @@
+{% extends 'app_layout.html' %}
+
+{% block app_content %}
+        <!-- Welcome Section -->
+        <section class="flex flex-col lg:flex-row items-center gap-12 mb-16 relative">
+            <!-- Decorative bg element -->
+            <div class="absolute -top-20 -left-20 w-64 h-64 bg-neon-teal/5 blur-3xl rounded-full pointer-events-none"></div>
+
+            <div class="w-full lg:w-1/2 z-10">
+                <h1 class="text-4xl lg:text-6xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-industrial-100/50 leading-tight mb-6">
+                    SELAMAT<br>DATANG
+                </h1>
+                <p class="font-mono text-sm text-industrial-100/60 leading-relaxed mb-8 border-l-2 border-industrial-800 pl-4">
+                    Pantau status operasional dan kesehatan dinamo industri secara real-time. Inisiasi protokol diagnostik baru untuk menganalisis anomali getaran, suhu, dan arus listrik.
+                </p>
+                <button class="relative group bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-8 overflow-hidden transition-all duration-300 hover:bg-white">
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Jalankan Analisis
+                        <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </span>
+                    <div class="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                </button>
+            </div>
+            
+            <div class="w-full lg:w-1/2 relative h-64 lg:h-96 border border-industrial-800 bg-industrial-900 flex items-center justify-center overflow-hidden group">
+                <!-- High-tech abstract visual -->
+                <div class="absolute inset-0 bg-grid-pattern opacity-50"></div>
+                <div class="absolute inset-0 bg-gradient-to-tr from-industrial-900 via-transparent to-neon-teal/10"></div>
+                
+                <!-- Radar sweep effect -->
+                <div class="absolute inset-0 border-neon-cyan/20 rounded-full scale-[2] origin-center rotate-0 group-hover:rotate-180 transition-transform duration-[3s] ease-linear">
+                    <div class="absolute top-0 right-1/2 w-1/2 h-1/2 bg-gradient-to-bl from-neon-cyan/10 to-transparent"></div>
+                </div>
+
+                <!-- Central core -->
+                <div class="relative w-32 h-32 border border-neon-cyan/30 rounded-full flex items-center justify-center">
+                    <div class="w-24 h-24 border border-neon-cyan/50 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                        <div class="w-16 h-16 border-t border-b border-neon-cyan rounded-full"></div>
+                    </div>
+                    <div class="absolute w-4 h-4 bg-neon-cyan shadow-[0_0_15px_#66FCF1]"></div>
+                </div>
+                
+                <div class="absolute bottom-4 left-4 font-mono text-[10px] text-neon-cyan/50 tracking-widest">
+                    SENSOR ARRAY: ONLINE
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="relative z-10">
+            <div class="flex justify-between items-end mb-6 border-b border-industrial-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-display font-bold text-industrial-100 uppercase tracking-wide">Log Terbaru</h2>
+                    <p class="font-mono text-xs text-industrial-100/50 mt-1">Data riwayat diagnostik 24 jam terakhir</p>
+                </div>
+                <a href="#" class="font-mono text-xs text-neon-cyan hover:text-white transition-colors tracking-widest uppercase flex items-center gap-1">
+                    Semua Data <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto border border-industrial-800 bg-industrial-900/50">
+                <table class="w-full text-left font-mono text-sm">
+                    <thead class="bg-industrial-800/80 text-industrial-100/70 text-xs tracking-widest uppercase">
+                        <tr>
+                            <th class="p-4 border-b border-industrial-800 font-normal">ID</th>
+                            <th class="p-4 border-b border-industrial-800 font-normal">Timestamp</th>
+                            <th class="p-4 border-b border-industrial-800 font-normal">Unit Dinamo</th>
+                            <th class="p-4 border-b border-industrial-800 font-normal">Hasil Analisis</th>
+                            <th class="p-4 border-b border-industrial-800 font-normal text-right">Akurasi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-industrial-800/50 text-industrial-100">
+                        {% for item in dummy_history %}
+                        <tr class="hover:bg-industrial-800/30 transition-colors group">
+                            <td class="p-4 text-industrial-100/50">#{{ "%04d"|format(item.id) }}</td>
+                            <td class="p-4 text-industrial-100/70">{{ item.tanggal }}</td>
+                            <td class="p-4 whitespace-pre-line group-hover:text-neon-cyan transition-colors">{{ item.dinamo }}</td>
+                            <td class="p-4">
+                                {% if item.diagnosis == 'Normal' %}
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-900/30 text-green-400 border border-green-800/50 text-xs">
+                                        <span class="w-1 h-1 rounded-full bg-green-400"></span> Normal
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-900/30 text-red-400 border border-red-800/50 text-xs">
+                                        <span class="w-1 h-1 rounded-full bg-red-400 animate-pulse"></span> {{ item.diagnosis }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="p-4 text-right text-neon-cyan">{{ item.confidence }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+{% endblock %}

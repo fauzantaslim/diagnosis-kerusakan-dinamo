@@ -1,0 +1,37 @@
+{% macro input(name, label, type='text', required=True) %}
+<div class="relative group" x-data="{ show: false }">
+    <label for="{{ name }}" class="block text-xs font-mono text-neon-cyan/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-neon-cyan">{{ label }}</label>
+    <div class="relative">
+        <!-- Decorator corner lines -->
+        <div class="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-neon-cyan opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none"></div>
+        <div class="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-neon-cyan opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none"></div>
+        
+        <input :type="show ? 'text' : '{{ type }}'" id="{{ name }}" name="{{ name }}" {% if required %}required{% endif %} 
+               class="w-full px-4 py-3 bg-industrial-800 border border-industrial-800/50 text-industrial-100 focus:outline-none focus:border-neon-cyan/50 focus:bg-industrial-800 transition-all font-mono placeholder:text-industrial-100/30 pr-12">
+        
+        {% if type == 'password' %}
+        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-industrial-100/30 hover:text-neon-cyan transition-colors focus:outline-none z-20">
+            <!-- Eye Icon -->
+            <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            <!-- Eye Off Icon -->
+            <svg x-show="show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro button(text, type='submit', classes='') %}
+<div class="pt-4 relative group cursor-pointer inline-block w-full">
+    <!-- Hover glow effect -->
+    <div class="absolute inset-0 bg-neon-cyan blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none"></div>
+    <button type="{{ type }}" class="relative w-full bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-6 overflow-hidden transition-all duration-300 hover:bg-white hover:text-industrial-900 border border-transparent {{ classes }}">
+        <span class="relative z-10 flex items-center justify-center gap-2">
+            {{ text }}
+            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </span>
+        <!-- Cyber stripe -->
+        <div class="absolute top-0 right-0 w-[4px] h-full bg-industrial-900 opacity-20 transform -skew-x-12 translate-x-2"></div>
+    </button>
+</div>
+{% endmacro %}
