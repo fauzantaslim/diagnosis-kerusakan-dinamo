@@ -4,35 +4,36 @@
 {% block content %}
 <div class="flex min-h-screen w-full flex-col lg:flex-row">
     <!-- Left Side: Brand / Visual -->
-    <div class="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-industrial-800 bg-industrial-900/50 backdrop-blur-sm relative overflow-hidden">
-        <div class="absolute -left-32 -bottom-32 w-96 h-96 border border-industrial-800 rounded-full opacity-50"></div>
-        <div class="absolute -left-16 -bottom-16 w-96 h-96 border border-industrial-800 rounded-full opacity-50"></div>
+    <div class="lg:w-1/2 relative min-h-[35vh] lg:min-h-screen overflow-hidden border-b lg:border-b-0 lg:border-r border-industrial-800">
+        <!-- Background Image -->
+        <img src="https://images.unsplash.com/photo-1581092335397-9583eb92d232?q=80&w=2000&auto=format&fit=crop" alt="Industrial Electric Motor" class="absolute inset-0 w-full h-full object-cover object-center opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
         
-        <div class="relative z-10 flex items-center gap-4">
-            <div class="w-12 h-12 bg-neon-cyan text-industrial-900 flex items-center justify-center font-display font-bold text-2xl rotate-45">
-                <span class="-rotate-45">D</span>
-            </div>
-            <span class="font-display font-bold text-xl tracking-widest text-industrial-100 uppercase">DIAG-D System</span>
-        </div>
+        <!-- Overlay for better text readability -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent"></div>
+        <div class="absolute inset-0 bg-[#0a0a0a]/30 mix-blend-multiply"></div>
 
-        <div class="relative z-10 mt-20 lg:mt-0">
-            <h1 class="text-5xl lg:text-7xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-industrial-100/50 leading-tight mb-6">
-                {% block auth_title %}{% endblock %}
-            </h1>
-            <p class="font-mono text-sm text-industrial-100/60 max-w-md border-l-2 border-neon-cyan/50 pl-4">
-                {% block auth_description %}{% endblock %}
-            </p>
-        </div>
-        
-        <div class="relative z-10 mt-12 font-mono text-xs text-industrial-100/40 flex items-center gap-4">
-            {% block auth_status %}{% endblock %}
-        </div>
     </div>
 
     <!-- Right Side: Form -->
     <div class="lg:w-1/2 flex items-center justify-center p-8 lg:p-16 relative">
         <div class="w-full max-w-md relative z-10">
+            <div class="mb-10">
+                <h2 class="text-3xl font-display font-bold text-industrial-100 uppercase tracking-wide">{% block auth_heading %}{% endblock %}</h2>
+                <p class="mt-2 text-sm font-mono text-industrial-100/60 uppercase tracking-wider">{% block auth_subheading %}{% endblock %}</p>
+                <div class="w-16 h-1 bg-neon-cyan mt-4"></div>
+            </div>
+
             {% block auth_form %}{% endblock %}
+
+            <div class="mt-12 flex items-center justify-center gap-4">
+                <div class="h-px bg-industrial-800 flex-grow"></div>
+                <span class="font-mono text-xs text-industrial-100/50 tracking-widest uppercase">Atau</span>
+                <div class="h-px bg-industrial-800 flex-grow"></div>
+            </div>
+
+            <p class="text-center mt-8 font-mono text-sm text-industrial-100/70">
+                {% block auth_footer_text %}{% endblock %} <a href="{% block auth_footer_url %}{% endblock %}" class="text-neon-cyan hover:text-white transition-colors border-b border-neon-cyan/30 hover:border-white pb-0.5">{% block auth_footer_link_text %}{% endblock %}</a>
+            </p>
         </div>
         
         <!-- Corner accents for the form container -->

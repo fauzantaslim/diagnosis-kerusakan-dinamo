@@ -1,48 +1,19 @@
 {% extends 'auth_layout.html' %}
 {% import 'components.html' as components %}
 
-{% block auth_sys_text %}
-SYS.REGISTRATION // v2.0.4
-{% endblock %}
-
-{% block auth_title %}
-NEW<br>OPERATOR
-{% endblock %}
-
-{% block auth_description %}
-Pendaftaran operator diagnostik baru. Seluruh aktivitas akses dan diagnosis akan dicatat dalam sistem keamanan sentral.
-{% endblock %}
-
-{% block auth_status %}
-<span class="w-2 h-2 rounded-full bg-neon-teal animate-pulse"></span>
-STATUS: WAITING FOR CREDENTIAL INPUT
-{% endblock %}
+{% block auth_heading %}Pendaftaran{% endblock %}
+{% block auth_subheading %}Isi data berikut untuk mulai menggunakan{% endblock %}
+{% block auth_footer_text %}Sudah memiliki akun?{% endblock %}
+{% block auth_footer_url %}{{ url_for('main_bp.login') }}{% endblock %}
+{% block auth_footer_link_text %}Login Disini{% endblock %}
 
 {% block auth_form %}
-<div class="mb-10">
-    <h2 class="text-3xl font-display font-bold text-industrial-100 uppercase tracking-wide">Pendaftaran</h2>
-    <p class="mt-2 text-sm font-mono text-industrial-100/60 uppercase tracking-wider">Isi data berikut untuk mulai menggunakan</p>
-    <div class="w-16 h-1 bg-neon-cyan mt-4"></div>
-</div>
-
 <form action="{{ url_for('main_bp.register') }}" method="POST" class="space-y-6">
     {{ components.input('nama_lengkap', 'Nama Lengkap') }}
     {{ components.input('username', 'Username') }}
     {{ components.input('password', 'Password', type='password') }}
     {{ components.input('confirm_password', 'Konfirmasi Password', type='password') }}
-    
-    <div class="pt-2">
-        {{ components.button('Daftar') }}
-    </div>
+
+    {{ components.button('Daftar') }}
 </form>
-
-<div class="mt-12 flex items-center justify-center gap-4">
-    <div class="h-px bg-industrial-800 flex-grow"></div>
-    <span class="font-mono text-xs text-industrial-100/50 tracking-widest uppercase">Atau</span>
-    <div class="h-px bg-industrial-800 flex-grow"></div>
-</div>
-
-<p class="text-center mt-8 font-mono text-sm text-industrial-100/70">
-    Sudah memiliki akun? <a href="{{ url_for('main_bp.login') }}" class="text-neon-cyan hover:text-white transition-colors border-b border-neon-cyan/30 hover:border-white pb-0.5">Login Disini</a>
-</p>
 {% endblock %}
