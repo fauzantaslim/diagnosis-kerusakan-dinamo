@@ -7,7 +7,7 @@ def index_controller():
     # history_data = services.get_recent_history(current_user.id)
     
     dummy_history = services.get_dummy_history()
-    return render_template('index.html', dummy_history=dummy_history)
+    return render_template('pages/app/index.html', dummy_history=dummy_history)
 
 def login_controller():
     if current_user.is_authenticated:
@@ -24,7 +24,7 @@ def login_controller():
         else:
             flash(message, 'error')
             
-    return render_template('login.html')
+    return render_template('pages/auth/login.html')
 
 def register_controller():
     if current_user.is_authenticated:
@@ -44,7 +44,7 @@ def register_controller():
         else:
             flash(message, 'error')
             
-    return render_template('register.html')
+    return render_template('pages/auth/register.html')
 
 def logout_controller():
     services.logout_current_user()
