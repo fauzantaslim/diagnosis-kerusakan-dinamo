@@ -25,6 +25,24 @@
     </div>
 </section>
 
+<!-- Filter Tanggal -->
+<div class="mb-6 flex flex-col md:flex-row items-end gap-4 border border-industrial-800 bg-industrial-900/50 p-4">
+    <div class="flex flex-col gap-1">
+        <label for="start_date" class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Dari Tanggal</label>
+        <input type="date" id="start_date" class="bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-3 py-2 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan">
+    </div>
+    <div class="flex flex-col gap-1">
+        <label for="end_date" class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Sampai Tanggal</label>
+        <input type="date" id="end_date" class="bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-3 py-2 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan">
+    </div>
+    <button onclick="applyFilter()" class="font-mono text-xs px-5 py-2 h-[38px] bg-industrial-800 border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan hover:text-industrial-900 transition-colors uppercase tracking-widest">
+        Terapkan
+    </button>
+    <button onclick="resetFilter()" class="font-mono text-xs px-5 py-2 h-[38px] bg-industrial-800 border border-industrial-600 text-industrial-100/70 hover:border-industrial-100 hover:text-industrial-100 transition-colors uppercase tracking-widest">
+        Reset
+    </button>
+</div>
+
 <!-- Stats Bar -->
 <div id="stats-bar" class="grid grid-cols-3 gap-4 mb-8">
     <div class="border border-industrial-800 bg-industrial-900/50 p-4 flex flex-col gap-1">
@@ -124,7 +142,13 @@ async function loadHistory(page = 1) {
     document.getElementById('pagination').classList.add('hidden');
 
     try {
-        const res = await fetch(`{{ url_for('history_bp.get_history') }}?page=${page}&per_page=15`);
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        let url = `{{ url_for('history_bp.get_history') }}?page=${page}&per_page=15`;
+        if (startDate) url += `&start_date=${startDate}`;
+        if (endDate) url += `&end_date=${endDate}`;
+
+        const res = await fetch(url);
         const json = await res.json();
         if (!json.success) throw new Error(json.message);
 
@@ -195,6 +219,16 @@ async function loadHistory(page = 1) {
 function changePage(delta) {
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) loadHistory(newPage);
+}
+
+function applyFilter() {
+    loadHistory(1);
+}
+
+function resetFilter() {
+    document.getElementById('start_date').value = '';
+    document.getElementById('end_date').value = '';
+    loadHistory(1);
 }
 
 async function showDetail(id) {

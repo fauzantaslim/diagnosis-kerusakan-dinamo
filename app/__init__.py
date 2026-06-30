@@ -24,13 +24,11 @@ def create_app(config_class=Config):
     from app.routes.auth import auth_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.diagnosis import diagnosis_bp
-    from app.routes.dataset import dataset_bp
     from app.routes.history import history_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(diagnosis_bp, url_prefix='/diagnosis')
-    app.register_blueprint(dataset_bp, url_prefix='/dataset')
     app.register_blueprint(history_bp, url_prefix='/history')
 
     return app

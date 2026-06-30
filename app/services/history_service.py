@@ -3,18 +3,34 @@ Service untuk mengelola data riwayat diagnosis.
 """
 from app.models import db
 from app.models.history import History
+from datetime import datetime
 
 
-def get_history_by_user(user_id: int, page: int = 1, per_page: int = 20) -> dict:
+def get_history_by_user(user_id: int, page: int = 1, per_page: int = 20, start_date: str = None, end_date: str = None) -> dict:
     """
-    Mengambil riwayat diagnosis milik user tertentu dengan pagination.
+    Mengambil riwayat diagnosis milik user tertentu dengan pagination dan filter tanggal.
 
     Returns:
         dict dengan key: items, total, page, per_page, pages
     """
+    query = History.query.filter_by(user_id=user_id)
+
+    if start_date:
+        try:
+            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+            query = query.filter(History.tanggal >= start_dt)
+        except ValueError:
+            pass
+
+    if end_date:
+        try:
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+            query = query.filter(History.tanggal <= end_dt)
+        except ValueError:
+            pass
+
     pagination = (
-        History.query
-        .filter_by(user_id=user_id)
+        query
         .order_by(History.tanggal.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
     )

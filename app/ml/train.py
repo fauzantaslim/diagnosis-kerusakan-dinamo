@@ -13,7 +13,7 @@ import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 # Tambahkan root project ke path agar bisa import preprocessing
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -89,6 +89,9 @@ def train():
     print(f"{'='*60}")
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
+
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
 
     # Simpan model & preprocessors
     joblib.dump(model, MODEL_PATH)
