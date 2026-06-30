@@ -16,19 +16,8 @@
                         body: ['"Sora"', 'sans-serif'],
                         mono: ['"JetBrains Mono"', 'monospace'],
                     },
-                    colors: {
-                        industrial: {
-                            900: '#0B0C10',
-                            800: '#1F2833',
-                            100: '#C5C6C7',
-                        },
-                        neon: {
-                            cyan: '#66FCF1',
-                            teal: '#45A29E'
-                        }
-                    },
                     backgroundImage: {
-                        'grid-pattern': "linear-gradient(to right, #1F2833 1px, transparent 1px), linear-gradient(to bottom, #1F2833 1px, transparent 1px)",
+                        'grid-pattern': "linear-gradient(to right, #E2E8F0 1px, transparent 1px), linear-gradient(to bottom, #E2E8F0 1px, transparent 1px)",
                     }
                 }
             }
@@ -39,12 +28,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Sora:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #0B0C10;
-            color: #C5C6C7;
+            background-color: #F8FAFC;
+            color: #1E293B;
         }
         .bg-grid {
             background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(31, 40, 51, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(31, 40, 51, 0.5) 1px, transparent 1px);
+            background-image: linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
         }
         
         /* Custom scrollbar */
@@ -52,30 +41,30 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #0B0C10; 
+            background: #F8FAFC; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #1F2833; 
+            background: #CBD5E1; 
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #45A29E; 
+            background: #94A3B8; 
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col antialiased font-body bg-grid relative selection:bg-neon-cyan selection:text-industrial-900">
+<body class="min-h-screen flex flex-col antialiased font-body bg-grid relative selection:bg-blue-600 selection:text-white">
     <!-- Ambient glow effect -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-[-1]">
-        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-neon-teal/10 blur-[120px] rounded-full mix-blend-screen"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-neon-cyan/5 blur-[120px] rounded-full mix-blend-screen"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/10 blur-[120px] rounded-full mix-blend-multiply"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-300/10 blur-[120px] rounded-full mix-blend-multiply"></div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="fixed top-6 right-6 z-50 flex flex-col gap-3 font-mono text-sm">
             {% for category, message in messages %}
-                <div class="px-5 py-4 border-l-4 shadow-2xl backdrop-blur-md bg-industrial-800/90 
-                    {% if category == 'error' %}border-red-500 text-red-100{% else %}border-neon-cyan text-neon-cyan{% endif %}
+                <div class="px-5 py-4 border-l-4 shadow-xl backdrop-blur-md bg-white/90 border border-slate-200
+                    {% if category == 'error' %}border-l-red-500 text-red-600{% else %}border-l-blue-600 text-blue-700{% endif %}
                     animate-[slideIn_0.3s_ease-out_forwards]">
                     <div class="flex items-center gap-3">
                         <span class="opacity-70 text-xs">[{{ category|upper }}]</span>

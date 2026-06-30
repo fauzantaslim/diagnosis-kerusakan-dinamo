@@ -1,24 +1,27 @@
-{% macro input(name, label, type='text', required=True) %}
+{% macro input(name, label, type='text', required=True, value='', step='', min='', max='') %}
 <div class="relative group" x-data="{ show: false }">
     <label for="{{ name }}"
-        class="block text-xs font-mono text-neon-cyan/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-neon-cyan">{{
+        class="block text-xs font-mono text-blue-600/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-blue-600">{{
         label }}</label>
     <div class="relative">
         <!-- Decorator corner lines -->
         <div
-            class="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-neon-cyan opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none">
+            class="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-blue-600 opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none">
         </div>
         <div
-            class="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-neon-cyan opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none">
+            class="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b border-r border-blue-600 opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none">
         </div>
 
-        <input :type="show ? 'text' : '{{ type }}'" id="{{ name }}" name="{{ name }}" {% if required %}required{% endif
-            %}
-            class="w-full px-4 py-3 bg-industrial-800 border border-industrial-800/50 text-industrial-100 focus:outline-none focus:border-neon-cyan/50 focus:bg-industrial-800 transition-all font-mono placeholder:text-industrial-100/30 pr-12">
+        <input :type="show ? 'text' : '{{ type }}'" id="{{ name }}" name="{{ name }}" {% if required %}required{% endif %}
+            {% if value != '' %}value="{{ value }}"{% endif %}
+            {% if step != '' %}step="{{ step }}"{% endif %}
+            {% if min != '' %}min="{{ min }}"{% endif %}
+            {% if max != '' %}max="{{ max }}"{% endif %}
+            class="w-full px-4 py-3 bg-white border border-slate-200/50 text-slate-800 focus:outline-none focus:border-blue-600/50 focus:bg-white transition-all font-mono placeholder:text-slate-400 pr-12">
 
         {% if type == 'password' %}
         <button type="button" @click="show = !show"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-industrial-100/30 hover:text-neon-cyan transition-colors focus:outline-none z-20">
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors focus:outline-none z-20">
             <!-- Eye Icon -->
             <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2"
@@ -40,29 +43,21 @@
 </div>
 {% endmacro %}
 
-{% macro button(text, type='submit', classes='') %}
-<div class="pt-4 relative group cursor-pointer inline-block w-full">
-    <!-- Hover glow effect -->
-    <div
-        class="absolute inset-0 bg-neon-cyan blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none">
-    </div>
-    <button type="{{ type }}"
-        class="relative w-full bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-6 overflow-hidden transition-all duration-300 hover:bg-white hover:text-industrial-900 border border-transparent {{ classes }}">
-        <span class="relative z-10 flex items-center justify-center gap-2">
-            <div class="pt-2">
-                {{ text }}
-            </div>
-            
-            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
-                </path>
-            </svg>
-        </span>
-        <!-- Cyber stripe -->
-        <div
-            class="absolute top-0 right-0 w-[4px] h-full bg-industrial-900 opacity-20 transform -skew-x-12 translate-x-2">
-        </div>
-    </button>
-</div>
+{% macro button(text, type='submit', classes='', id='', show_spinner=False, onclick='', icon_svg='') %}
+<button type="{{ type }}" {% if id %}id="{{ id }}"{% endif %} {% if onclick %}onclick="{{ onclick }}"{% endif %}
+    class="w-full relative group bg-blue-600 text-white font-display font-bold uppercase tracking-[0.15em] py-4 px-8 overflow-hidden transition-all duration-300 hover:bg-white hover:text-blue-600 flex items-center justify-center gap-3 text-sm md:text-base disabled:opacity-60 disabled:cursor-not-allowed {{ classes }}">
+    <span {% if show_spinner %}id="btn-text"{% endif %} class="flex items-center gap-2 relative z-10">
+        {% if icon_svg %}
+            {{ icon_svg|safe }}
+        {% endif %}
+        {{ text|safe }}
+    </span>
+    {% if show_spinner %}
+    <svg id="btn-spinner" class="hidden animate-spin w-5 h-5 relative z-10" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+    </svg>
+    {% endif %}
+    <div class="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-20 transition-opacity pointer-events-none"></div>
+</button>
 {% endmacro %}

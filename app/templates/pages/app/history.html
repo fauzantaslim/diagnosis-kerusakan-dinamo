@@ -1,24 +1,25 @@
 {% extends 'layouts/app_layout.html' %}
 {% set active_page = 'riwayat' %}
+{% import 'components/ui.html' as components %}
 
 {% block app_content %}
 <!-- Header -->
 <section class="mb-10 relative">
-    <div class="absolute -top-10 -left-10 w-48 h-48 bg-neon-teal/5 blur-3xl rounded-full pointer-events-none"></div>
-    <div class="flex items-center justify-between">
+    <div class="absolute -top-10 -left-10 w-48 h-48 bg-blue-700/5 blur-3xl rounded-full pointer-events-none"></div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
             <div class="flex items-center gap-3 mb-2">
-                <div class="w-1 h-8 bg-neon-cyan"></div>
-                <h1 class="text-3xl lg:text-4xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-industrial-100/50 uppercase tracking-wide">
+                <div class="w-1 h-8 bg-blue-600"></div>
+                <h1 class="text-3xl lg:text-4xl font-display font-bold text-slate-800 uppercase tracking-wide">
                     Riwayat Diagnosis
                 </h1>
             </div>
-            <p class="font-mono text-sm text-industrial-100/50 ml-4 border-l border-industrial-800 pl-4">
+            <p class="font-mono text-sm text-slate-500 ml-4 border-l border-slate-200 pl-4">
                 Semua hasil diagnosis yang pernah dilakukan.
             </p>
         </div>
         <a href="{{ url_for('diagnosis_bp.identify_page') }}"
-            class="hidden md:flex items-center gap-2 font-mono text-xs px-5 py-2.5 bg-neon-cyan text-industrial-900 font-bold uppercase tracking-widest hover:bg-white transition-colors">
+            class="flex items-center justify-center md:justify-start gap-2 font-mono text-xs px-5 py-3 md:py-2.5 bg-blue-600 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-colors w-full md:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Diagnosa Baru
         </a>
@@ -26,55 +27,55 @@
 </section>
 
 <!-- Filter Tanggal -->
-<div class="mb-6 flex flex-col md:flex-row items-end gap-4 border border-industrial-800 bg-industrial-900/50 p-4">
-    <div class="flex flex-col gap-1">
-        <label for="start_date" class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Dari Tanggal</label>
-        <input type="date" id="start_date" class="bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-3 py-2 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan">
+<div class="mb-6 flex flex-col md:flex-row items-end gap-4 border border-slate-200 bg-slate-100/50 p-4">
+    <div class="w-full md:w-auto md:min-w-[200px]">
+        {{ components.input('start_date', 'Dari Tanggal', type='date', required=False) }}
     </div>
-    <div class="flex flex-col gap-1">
-        <label for="end_date" class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Sampai Tanggal</label>
-        <input type="date" id="end_date" class="bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-3 py-2 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan">
+    <div class="w-full md:w-auto md:min-w-[200px]">
+        {{ components.input('end_date', 'Sampai Tanggal', type='date', required=False) }}
     </div>
-    <button onclick="applyFilter()" class="font-mono text-xs px-5 py-2 h-[38px] bg-industrial-800 border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan hover:text-industrial-900 transition-colors uppercase tracking-widest">
-        Terapkan
-    </button>
-    <button onclick="resetFilter()" class="font-mono text-xs px-5 py-2 h-[38px] bg-industrial-800 border border-industrial-600 text-industrial-100/70 hover:border-industrial-100 hover:text-industrial-100 transition-colors uppercase tracking-widest">
-        Reset
-    </button>
+    <div class="flex gap-4 w-full md:w-auto mt-2 md:mt-0">
+        <div class="flex-1 md:flex-none w-full md:w-32">
+            {{ components.button('Terapkan', type='button', onclick='applyFilter()', classes='border !border-blue-600/50 !py-2 !px-4 !text-xs') }}
+        </div>
+        <div class="flex-1 md:flex-none w-full md:w-32">
+            {{ components.button('Reset', type='button', onclick='resetFilter()', classes='border !bg-white !text-slate-600 !border-slate-400 hover:!border-slate-800 hover:!bg-slate-50 !py-2 !px-4 !text-xs') }}
+        </div>
+    </div>
 </div>
 
 <!-- Stats Bar -->
-<div id="stats-bar" class="grid grid-cols-3 gap-4 mb-8">
-    <div class="border border-industrial-800 bg-industrial-900/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Total Diagnosa</span>
-        <span id="stat-total" class="font-display text-2xl font-bold text-industrial-100">—</span>
+<div id="stats-bar" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
+        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Total Diagnosa</span>
+        <span id="stat-total" class="font-display text-2xl font-bold text-slate-800">—</span>
     </div>
-    <div class="border border-industrial-800 bg-industrial-900/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Terdeteksi Normal</span>
+    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
+        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Terdeteksi Normal</span>
         <span id="stat-normal" class="font-display text-2xl font-bold text-green-400">—</span>
     </div>
-    <div class="border border-industrial-800 bg-industrial-900/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase">Terdeteksi Rusak</span>
+    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
+        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Terdeteksi Rusak</span>
         <span id="stat-rusak" class="font-display text-2xl font-bold text-red-400">—</span>
     </div>
 </div>
 
 <!-- Table -->
-<div class="border border-industrial-800 bg-industrial-900/50">
+<div class="border border-slate-200 bg-slate-100/50">
     <!-- Table header -->
     <div class="overflow-x-auto">
         <table class="w-full text-left font-mono text-sm">
-            <thead class="bg-industrial-800/80 text-industrial-100/70 text-xs tracking-widest uppercase">
+            <thead class="bg-white/80 text-slate-600 text-xs tracking-widest uppercase">
                 <tr>
-                    <th class="p-4 border-b border-industrial-800 font-normal">ID</th>
-                    <th class="p-4 border-b border-industrial-800 font-normal">Timestamp</th>
-                    <th class="p-4 border-b border-industrial-800 font-normal">Jenis Mesin</th>
-                    <th class="p-4 border-b border-industrial-800 font-normal">Hasil Diagnosis</th>
-                    <th class="p-4 border-b border-industrial-800 font-normal text-center">Confidence</th>
-                    <th class="p-4 border-b border-industrial-800 font-normal text-center">Aksi</th>
+                    <th class="p-4 border-b border-slate-200 font-bold">ID</th>
+                    <th class="p-4 border-b border-slate-200 font-bold">Timestamp</th>
+                    <th class="p-4 border-b border-slate-200 font-bold">Jenis Mesin</th>
+                    <th class="p-4 border-b border-slate-200 font-bold">Hasil Diagnosis</th>
+                    <th class="p-4 border-b border-slate-200 font-bold text-center">Confidence</th>
+                    <th class="p-4 border-b border-slate-200 font-bold text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="history-tbody" class="divide-y divide-industrial-800/50 text-industrial-100">
+            <tbody id="history-tbody" class="divide-y divide-slate-200/50 text-slate-800">
                 <!-- Filled by JS -->
             </tbody>
         </table>
@@ -82,46 +83,46 @@
 
     <!-- Empty state -->
     <div id="empty-state" class="hidden py-20 flex flex-col items-center justify-center text-center">
-        <svg class="w-12 h-12 text-industrial-100/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-12 h-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
         </svg>
-        <p class="font-mono text-xs text-industrial-100/40 tracking-widest uppercase">Belum ada riwayat diagnosis</p>
-        <a href="{{ url_for('diagnosis_bp.identify_page') }}" class="mt-4 font-mono text-xs text-neon-cyan hover:text-white transition-colors tracking-widest uppercase">
+        <p class="font-mono text-xs text-slate-400 tracking-widest uppercase">Belum ada riwayat diagnosis</p>
+        <a href="{{ url_for('diagnosis_bp.identify_page') }}" class="mt-4 font-mono text-xs text-blue-600 hover:text-blue-800 transition-colors tracking-widest uppercase">
             Mulai Diagnosa →
         </a>
     </div>
 
     <!-- Loading state -->
     <div id="loading-state" class="py-16 flex items-center justify-center gap-3">
-        <svg class="animate-spin w-5 h-5 text-neon-cyan/50" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin w-5 h-5 text-blue-600/50" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
         </svg>
-        <span class="font-mono text-xs text-industrial-100/40 tracking-widest">Memuat data...</span>
+        <span class="font-mono text-xs text-slate-400 tracking-widest">Memuat data...</span>
     </div>
 </div>
 
 <!-- Pagination -->
-<div id="pagination" class="hidden mt-6 flex items-center justify-between font-mono text-xs text-industrial-100/50">
+<div id="pagination" class="hidden mt-6 flex items-center justify-between font-mono text-xs text-slate-500">
     <span id="pagination-info">—</span>
     <div class="flex gap-2">
         <button id="prev-btn" onclick="changePage(-1)"
-            class="px-3 py-1.5 border border-industrial-800 hover:border-neon-cyan/50 hover:text-neon-cyan disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
+            class="px-3 py-1.5 border border-slate-200 hover:border-blue-600/50 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
             ← Prev
         </button>
         <button id="next-btn" onclick="changePage(1)"
-            class="px-3 py-1.5 border border-industrial-800 hover:border-neon-cyan/50 hover:text-neon-cyan disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
+            class="px-3 py-1.5 border border-slate-200 hover:border-blue-600/50 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
             Next →
         </button>
     </div>
 </div>
 
 <!-- Detail Modal -->
-<div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-industrial-900/90 backdrop-blur-sm">
-    <div class="w-full max-w-2xl border border-neon-cyan/30 bg-industrial-900 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between p-6 border-b border-industrial-800">
-            <h3 class="font-display font-bold text-lg text-industrial-100 uppercase tracking-wide">Detail Diagnosis</h3>
-            <button onclick="closeModal()" class="text-industrial-100/40 hover:text-neon-cyan transition-colors">
+<div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-50/90 backdrop-blur-sm">
+    <div class="w-full max-w-2xl border border-blue-600/30 bg-slate-50 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-slate-200">
+            <h3 class="font-display font-bold text-lg text-slate-800 uppercase tracking-wide">Detail Diagnosis</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-blue-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
@@ -172,29 +173,29 @@ async function loadHistory(page = 1) {
         // Render rows
         const tbody = document.getElementById('history-tbody');
         tbody.innerHTML = items.map(item => `
-            <tr class="hover:bg-industrial-800/30 transition-colors group">
-                <td class="p-4 text-industrial-100/50">#${String(item.id).padStart(4, '0')}</td>
-                <td class="p-4 text-industrial-100/70 whitespace-nowrap">${item.tanggal}</td>
-                <td class="p-4 text-industrial-100/80">${item.jenis_mesin || '—'}</td>
+            <tr class="hover:bg-white/30 transition-colors group">
+                <td class="p-4 text-slate-500">#${String(item.id).padStart(4, '0')}</td>
+                <td class="p-4 text-slate-600 whitespace-nowrap">${item.tanggal}</td>
+                <td class="p-4 text-slate-700">${item.jenis_mesin || '—'}</td>
                 <td class="p-4">
                     ${item.diagnosis === 'Motor Normal'
-                        ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-900/30 text-green-400 border border-green-800/50 text-xs">
-                               <span class="w-1 h-1 rounded-full bg-green-400"></span> ${item.diagnosis}
+                        ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 text-xs">
+                               <span class="w-1 h-1 rounded-full bg-green-500"></span> ${item.diagnosis}
                            </span>`
-                        : `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-900/30 text-red-400 border border-red-800/50 text-xs">
-                               <span class="w-1 h-1 rounded-full bg-red-400 animate-pulse"></span> ${item.diagnosis}
+                        : `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs">
+                               <span class="w-1 h-1 rounded-full bg-red-500 animate-pulse"></span> ${item.diagnosis}
                            </span>`
                     }
                 </td>
-                <td class="p-4 text-center text-neon-cyan font-bold">${item.confidence_pct}</td>
+                <td class="p-4 text-center text-blue-600 font-bold">${item.confidence_pct}</td>
                 <td class="p-4 text-center">
                     <div class="flex items-center justify-center gap-2">
                         <button onclick="showDetail(${item.id})"
-                            class="font-mono text-[10px] px-2 py-1 border border-industrial-700 text-industrial-100/50 hover:border-neon-cyan/50 hover:text-neon-cyan transition-colors uppercase tracking-widest">
+                            class="font-mono text-[10px] px-2 py-1 border border-slate-300 text-slate-500 hover:border-blue-600/50 hover:text-blue-600 transition-colors uppercase tracking-widest">
                             Detail
                         </button>
                         <button onclick="deleteRecord(${item.id})"
-                            class="font-mono text-[10px] px-2 py-1 border border-industrial-700 text-industrial-100/50 hover:border-red-500/50 hover:text-red-400 transition-colors uppercase tracking-widest">
+                            class="font-mono text-[10px] px-2 py-1 border border-slate-300 text-slate-500 hover:border-red-500/50 hover:text-red-600 transition-colors uppercase tracking-widest">
                             Hapus
                         </button>
                     </div>
@@ -236,7 +237,7 @@ async function showDetail(id) {
     const content = document.getElementById('modal-content');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
-    content.innerHTML = '<p class="font-mono text-xs text-industrial-100/40 text-center">Memuat...</p>';
+    content.innerHTML = '<p class="font-mono text-xs text-slate-400 text-center">Memuat...</p>';
 
     try {
         const res = await fetch(`{{ url_for('history_bp.get_history') }}/${id}`);
@@ -246,16 +247,16 @@ async function showDetail(id) {
 
         content.innerHTML = `
             <!-- Result -->
-            <div class="border border-neon-cyan/20 bg-neon-cyan/5 p-4">
-                <p class="font-mono text-[10px] text-industrial-100/50 tracking-widest uppercase mb-1">Hasil Diagnosis</p>
-                <p class="font-display text-xl font-bold ${d.diagnosis === 'Motor Normal' ? 'text-green-400' : 'text-neon-cyan'} uppercase">${d.diagnosis}</p>
-                <p class="font-mono text-sm text-industrial-100/60 mt-1">Confidence: <span class="text-neon-cyan font-bold">${d.confidence_pct}</span></p>
-                <p class="font-mono text-xs text-industrial-100/40 mt-1">${d.tanggal}</p>
+            <div class="border border-blue-600/20 bg-blue-600/5 p-4">
+                <p class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-1">Hasil Diagnosis</p>
+                <p class="font-display text-xl font-bold ${d.diagnosis === 'Motor Normal' ? 'text-green-600' : 'text-blue-600'} uppercase">${d.diagnosis}</p>
+                <p class="font-mono text-sm text-slate-500 mt-1">Confidence: <span class="text-blue-600 font-bold">${d.confidence_pct}</span></p>
+                <p class="font-mono text-xs text-slate-400 mt-1">${d.tanggal}</p>
             </div>
 
             <!-- Spesifikasi -->
             <div>
-                <h4 class="font-mono text-[10px] text-industrial-100/50 tracking-widest uppercase mb-3">Spesifikasi Mesin</h4>
+                <h4 class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-3">Spesifikasi Mesin</h4>
                 <div class="grid grid-cols-3 gap-3">
                     ${detailItem('Jenis Mesin', d.jenis_mesin)}
                     ${detailItem('Daya', d.daya_hp_kw ? d.daya_hp_kw + ' HP' : '—')}
@@ -265,7 +266,7 @@ async function showDetail(id) {
 
             <!-- Pengukuran -->
             <div>
-                <h4 class="font-mono text-[10px] text-industrial-100/50 tracking-widest uppercase mb-3">Data Pengukuran</h4>
+                <h4 class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-3">Data Pengukuran</h4>
                 <div class="grid grid-cols-2 gap-3">
                     ${detailItem('Temperatur', d.temperatur_c ? d.temperatur_c + ' °C' : '—')}
                     ${detailItem('Arus', d.arus_a ? d.arus_a + ' A' : '—')}
@@ -280,16 +281,16 @@ async function showDetail(id) {
 
             <!-- Gejala Aktif -->
             <div>
-                <h4 class="font-mono text-[10px] text-industrial-100/50 tracking-widest uppercase mb-3">Gejala Teridentifikasi</h4>
+                <h4 class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-3">Gejala Teridentifikasi</h4>
                 ${d.gejala_aktif.length > 0
                     ? `<div class="flex flex-wrap gap-2">
                            ${d.gejala_aktif.map(g => `
-                               <span class="inline-flex items-center gap-1 px-2 py-0.5 border border-red-800/50 bg-red-900/20 text-red-400 font-mono text-[10px] tracking-wide">
-                                   <span class="w-1 h-1 rounded-full bg-red-400"></span> ${g}
+                               <span class="inline-flex items-center gap-1 px-2 py-0.5 border border-red-200 bg-red-100 text-red-700 font-mono text-[10px] tracking-wide">
+                                   <span class="w-1 h-1 rounded-full bg-red-500"></span> ${g}
                                </span>
                            `).join('')}
                        </div>`
-                    : '<p class="font-mono text-xs text-industrial-100/30">Tidak ada gejala teridentifikasi</p>'
+                    : '<p class="font-mono text-xs text-slate-400">Tidak ada gejala teridentifikasi</p>'
                 }
             </div>
         `;
@@ -300,9 +301,9 @@ async function showDetail(id) {
 
 function detailItem(label, value) {
     return `
-        <div class="bg-industrial-800/50 p-3">
-            <p class="font-mono text-[10px] text-industrial-100/40 tracking-widest uppercase mb-0.5">${label}</p>
-            <p class="font-mono text-sm text-industrial-100">${value ?? '—'}</p>
+        <div class="bg-white/50 p-3">
+            <p class="font-mono text-[10px] text-slate-400 tracking-widest uppercase mb-0.5">${label}</p>
+            <p class="font-mono text-sm text-slate-800">${value ?? '—'}</p>
         </div>
     `;
 }

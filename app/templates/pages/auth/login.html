@@ -10,19 +10,12 @@
 {% block auth_form %}
 <form id="login-form" class="space-y-6" novalidate>
     <!-- Error Banner -->
-    <div id="error-banner" class="hidden bg-red-900/30 border border-red-800/50 text-red-400 font-mono text-xs p-3 tracking-wide"></div>
+    <div id="error-banner" class="hidden bg-red-50 border border-red-200 text-red-600 font-mono text-xs p-3 tracking-wide"></div>
 
     {{ components.input('username', 'Username') }}
     {{ components.input('password', 'Password', type='password') }}
 
-    <button type="submit" id="submit-btn"
-        class="relative group w-full bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-8 overflow-hidden transition-all duration-300 hover:bg-white flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
-        <span id="btn-text">Login</span>
-        <svg id="btn-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-        </svg>
-    </button>
+    {{ components.button('Login', id='submit-btn', show_spinner=True) }}
 </form>
 
 <script>
