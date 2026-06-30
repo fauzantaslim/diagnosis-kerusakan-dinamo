@@ -29,15 +29,14 @@
                     Spesifikasi Mesin
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% set jenis_mesin_options = [
+                        {'value': '', 'label': 'Pilih Jenis Mesin', 'disabled': true, 'selected': true},
+                        {'value': 'Motor Induksi 3 Fasa', 'label': 'Motor Induksi 3 Fasa'},
+                        {'value': 'Motor Induksi 1 Fasa', 'label': 'Motor Induksi 1 Fasa'},
+                        {'value': 'Motor DC', 'label': 'Motor DC'}
+                    ] %}
                     <div class="md:col-span-1">
-                        <label for="jenis_mesin" class="block font-mono text-xs text-slate-500 tracking-widest uppercase mb-2">Jenis Mesin</label>
-                        <select name="jenis_mesin" id="jenis_mesin"
-                            class="w-full bg-white border border-slate-300 text-slate-800 font-mono text-sm px-4 py-3 focus:border-blue-600/50 focus:outline-none transition-colors" required>
-                            <option value="" disabled selected>Pilih Jenis Mesin</option>
-                            <option value="Motor Induksi 3 Fasa">Motor Induksi 3 Fasa</option>
-                            <option value="Motor Induksi 1 Fasa">Motor Induksi 1 Fasa</option>
-                            <option value="Motor DC">Motor DC</option>
-                        </select>
+                        {{ components.select('jenis_mesin', 'Jenis Mesin', options=jenis_mesin_options) }}
                     </div>
                     {{ components.input('daya_hp_kw', 'Daya (HP)', type='number', value='0', step='0.5', min='0') }}
                     {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='0', step='1', min='0') }}
