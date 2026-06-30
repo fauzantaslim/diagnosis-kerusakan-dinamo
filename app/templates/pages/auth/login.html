@@ -8,10 +8,67 @@
 {% block auth_footer_link_text %}Daftar Disini{% endblock %}
 
 {% block auth_form %}
-<form action="{{ url_for('auth_bp.login') }}" method="POST" class="space-y-6">
+<form id="login-form" class="space-y-6" novalidate>
+    <!-- Error Banner -->
+    <div id="error-banner" class="hidden bg-red-900/30 border border-red-800/50 text-red-400 font-mono text-xs p-3 tracking-wide"></div>
+
     {{ components.input('username', 'Username') }}
     {{ components.input('password', 'Password', type='password') }}
 
-    {{ components.button('Login') }}
+    <button type="submit" id="submit-btn"
+        class="relative group w-full bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-8 overflow-hidden transition-all duration-300 hover:bg-white flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+        <span id="btn-text">Login</span>
+        <svg id="btn-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+    </button>
 </form>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+    const errorBanner = document.getElementById('error-banner');
+
+    // Reset state
+    errorBanner.classList.add('hidden');
+    btn.disabled = true;
+    btnText.textContent = 'Memproses...';
+    spinner.classList.remove('hidden');
+
+    const payload = {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value,
+    };
+
+    try {
+        const res = await fetch("{{ url_for('auth_bp.login') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            btnText.textContent = 'Berhasil!';
+            window.location.href = data.redirect || "{{ url_for('dashboard_bp.index') }}";
+        } else {
+            errorBanner.textContent = data.message;
+            errorBanner.classList.remove('hidden');
+            btn.disabled = false;
+            btnText.textContent = 'Login';
+            spinner.classList.add('hidden');
+        }
+    } catch (err) {
+        errorBanner.textContent = 'Terjadi kesalahan jaringan. Coba lagi.';
+        errorBanner.classList.remove('hidden');
+        btn.disabled = false;
+        btnText.textContent = 'Login';
+        spinner.classList.add('hidden');
+    }
+});
+</script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'layouts/app_layout.html' %}
+{% set active_page = 'home' %}
 
 {% block app_content %}
         <!-- Welcome Section -->
@@ -13,13 +14,14 @@
                 <p class="font-mono text-sm text-industrial-100/60 leading-relaxed mb-8 border-l-2 border-industrial-800 pl-4">
                     Pantau status operasional dan kesehatan dinamo industri secara real-time. Inisiasi protokol diagnostik baru untuk menganalisis anomali getaran, suhu, dan arus listrik.
                 </p>
-                <button class="relative group bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-8 overflow-hidden transition-all duration-300 hover:bg-white">
+                <a href="{{ url_for('diagnosis_bp.identify_page') }}"
+                    class="relative group inline-flex bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.1em] py-3 px-8 overflow-hidden transition-all duration-300 hover:bg-white">
                     <span class="relative z-10 flex items-center justify-center gap-2">
                         Jalankan Analisis
                         <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </span>
                     <div class="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                </button>
+                </a>
             </div>
             
             <div class="w-full lg:w-1/2 relative h-64 lg:h-96 border border-industrial-800 bg-industrial-900 flex items-center justify-center overflow-hidden group">

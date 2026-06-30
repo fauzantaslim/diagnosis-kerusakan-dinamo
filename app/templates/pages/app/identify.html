@@ -1,0 +1,321 @@
+{% extends 'layouts/app_layout.html' %}
+{% set active_page = 'identifikasi' %}
+
+{% block app_content %}
+<!-- Header -->
+<section class="mb-10 relative">
+    <div class="absolute -top-10 -left-10 w-48 h-48 bg-neon-teal/5 blur-3xl rounded-full pointer-events-none"></div>
+    <div class="flex items-center gap-3 mb-2">
+        <div class="w-1 h-8 bg-neon-cyan"></div>
+        <h1 class="text-3xl lg:text-4xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-industrial-100/50 uppercase tracking-wide">
+            Identifikasi Kerusakan
+        </h1>
+    </div>
+    <p class="font-mono text-sm text-industrial-100/50 ml-4 border-l border-industrial-800 pl-4">
+        Masukkan data spesifikasi, gejala, dan pengukuran dinamo untuk memulai diagnosis.
+    </p>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+    <!-- Form Column -->
+    <div class="lg:col-span-3">
+        <form id="identify-form" novalidate class="space-y-8">
+
+            <!-- Spesifikasi Mesin -->
+            <div class="border border-industrial-800 bg-industrial-900/50 p-6">
+                <h2 class="font-display text-sm font-bold uppercase tracking-widest text-neon-cyan mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"></path></svg>
+                    Spesifikasi Mesin
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block font-mono text-xs text-industrial-100/60 tracking-widest uppercase mb-2">Jenis Mesin</label>
+                        <select name="jenis_mesin" id="jenis_mesin"
+                            class="w-full bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-4 py-3 focus:border-neon-cyan/50 focus:outline-none transition-colors">
+                            <option value="Motor Induksi 3 Fasa">Motor Induksi 3 Fasa</option>
+                            <option value="Motor Induksi 1 Fasa">Motor Induksi 1 Fasa</option>
+                            <option value="Motor DC">Motor DC</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-mono text-xs text-industrial-100/60 tracking-widest uppercase mb-2">Daya (HP)</label>
+                        <input type="number" name="daya_hp_kw" id="daya_hp_kw" value="7.5" step="0.5" min="0"
+                            class="w-full bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-4 py-3 focus:border-neon-cyan/50 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block font-mono text-xs text-industrial-100/60 tracking-widest uppercase mb-2">Jumlah Pole</label>
+                        <select name="jumlah_pole" id="jumlah_pole"
+                            class="w-full bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-4 py-3 focus:border-neon-cyan/50 focus:outline-none transition-colors">
+                            <option value="2">2</option>
+                            <option value="4" selected>4</option>
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pengukuran -->
+            <div class="border border-industrial-800 bg-industrial-900/50 p-6">
+                <h2 class="font-display text-sm font-bold uppercase tracking-widest text-neon-cyan mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Data Pengukuran
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% set measurements = [
+                        ('temperatur_c', 'Temperatur (°C)', '85'),
+                        ('arus_a', 'Arus (A)', '14.5'),
+                        ('tegangan_v', 'Tegangan (V)', '380'),
+                        ('resistansi_isolasi_mohm', 'R. Isolasi (MΩ)', '1.5'),
+                        ('kecepatan_putaran_rpm', 'Putaran (RPM)', '1450'),
+                        ('ketidakseimbangan_arus_pct', 'Ketdksbgn Arus (%)', '3.2'),
+                        ('ketidakseimbangan_tegangan_pct', 'Ketdksbgn Tgn (%)', '1.1'),
+                        ('faktor_daya', 'Faktor Daya', '0.85'),
+                    ] %}
+                    {% for field_name, label, placeholder in measurements %}
+                    <div>
+                        <label class="block font-mono text-xs text-industrial-100/60 tracking-widest uppercase mb-2">{{ label }}</label>
+                        <input type="number" name="{{ field_name }}" id="{{ field_name }}" value="{{ placeholder }}" step="any"
+                            class="w-full bg-industrial-800 border border-industrial-700 text-industrial-100 font-mono text-sm px-4 py-3 focus:border-neon-cyan/50 focus:outline-none transition-colors">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Gejala -->
+            <div class="border border-industrial-800 bg-industrial-900/50 p-6">
+                <h2 class="font-display text-sm font-bold uppercase tracking-widest text-neon-cyan mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Gejala Yang Teridentifikasi
+                </h2>
+                {% set symptoms = [
+                    ('suara_bising_abnormal', 'Suara Bising Abnormal'),
+                    ('getaran_berlebih', 'Getaran Berlebih'),
+                    ('motor_cepat_panas', 'Motor Cepat Panas'),
+                    ('arus_melebihi_normal', 'Arus Melebihi Normal'),
+                    ('tegangan_tidak_stabil', 'Tegangan Tidak Stabil'),
+                    ('putaran_menurun', 'Putaran Menurun'),
+                    ('sulit_start', 'Sulit Start'),
+                    ('sering_trip_mcb', 'Sering Trip MCB/MCCB'),
+                    ('trip_overload_relay', 'Trip Overload Relay'),
+                    ('efisiensi_menurun', 'Efisiensi Menurun'),
+                    ('bau_hangus', 'Bau Hangus'),
+                    ('intermittent_stopping', 'Intermittent Stopping'),
+                    ('warna_gulungan_berubah', 'Warna Gulungan Berubah'),
+                    ('kipas_pendingin_rusak', 'Kipas Pendingin Rusak'),
+                    ('terminal_terbakar', 'Terminal Terbakar'),
+                    ('bearing_aus_pecah', 'Bearing Aus/Pecah'),
+                    ('housing_bearing_aus', 'Housing Bearing Aus'),
+                    ('poros_shaft_aus', 'Poros (Shaft) Aus'),
+                    ('kebocoran_pelumas', 'Kebocoran Pelumas'),
+                    ('keretakan_dudukan', 'Keretakan Dudukan'),
+                    ('sumbatan_sirip_pendingin', 'Sumbatan Sirip Pendingin'),
+                    ('lubang_spi_aus', 'Lubang Spi (Keyway) Aus'),
+                ] %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for field_name, label in symptoms %}
+                    <label class="flex items-center gap-3 p-3 border border-industrial-800 hover:border-neon-cyan/30 cursor-pointer transition-colors group">
+                        <div class="relative flex-shrink-0">
+                            <input type="checkbox" name="{{ field_name }}" id="{{ field_name }}" value="Ya" class="peer sr-only">
+                            <div class="w-5 h-5 border border-industrial-700 bg-industrial-800 peer-checked:bg-neon-cyan peer-checked:border-neon-cyan transition-all flex items-center justify-center">
+                                <svg class="w-3 h-3 text-industrial-900 hidden peer-checked:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+                        <span class="font-mono text-xs text-industrial-100/70 group-hover:text-industrial-100 tracking-wider uppercase transition-colors">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submit-btn"
+                class="w-full relative group bg-neon-cyan text-industrial-900 font-display font-bold uppercase tracking-[0.15em] py-4 px-8 overflow-hidden transition-all duration-300 hover:bg-white flex items-center justify-center gap-3 text-base disabled:opacity-60 disabled:cursor-not-allowed">
+                <span id="btn-text" class="flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Jalankan Diagnosis
+                </span>
+                <svg id="btn-spinner" class="hidden animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <div class="absolute inset-0 w-full h-full bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+            </button>
+        </form>
+    </div>
+
+    <!-- Result Column -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Awaiting State -->
+        <div id="result-placeholder" class="border border-industrial-800 bg-industrial-900/50 p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
+            <div class="w-20 h-20 border border-industrial-700 rounded-full flex items-center justify-center mb-6 relative">
+                <div class="absolute inset-0 border-t border-neon-cyan/30 rounded-full animate-spin" style="animation-duration: 4s;"></div>
+                <svg class="w-8 h-8 text-industrial-100/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            </div>
+            <p class="font-mono text-xs text-industrial-100/40 tracking-widest uppercase">Menunggu Data Input</p>
+            <p class="font-mono text-[10px] text-industrial-100/25 tracking-wider mt-2">Isi form dan jalankan diagnosis</p>
+        </div>
+
+        <!-- Result Card (hidden initially) -->
+        <div id="result-card" class="hidden space-y-4">
+            <!-- Diagnosis Result -->
+            <div class="border border-neon-cyan/30 bg-industrial-900/80 p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-neon-cyan/5 blur-2xl rounded-full"></div>
+                <div class="relative">
+                    <p class="font-mono text-xs text-industrial-100/50 tracking-widest uppercase mb-2">Hasil Diagnosis</p>
+                    <h3 id="result-diagnosis" class="text-2xl font-display font-bold text-neon-cyan uppercase tracking-wide">—</h3>
+                    <div class="mt-4 flex items-center gap-3">
+                        <div class="flex-grow bg-industrial-800 h-2 rounded-full overflow-hidden">
+                            <div id="result-confidence-bar" class="h-full bg-neon-cyan transition-all duration-700" style="width: 0%"></div>
+                        </div>
+                        <span id="result-confidence-pct" class="font-mono text-sm text-neon-cyan font-bold min-w-[4rem] text-right">0%</span>
+                    </div>
+                    <p class="font-mono text-xs text-industrial-100/40 tracking-wider mt-1">Confidence Score</p>
+                </div>
+            </div>
+
+            <!-- Error Card -->
+            <div id="result-error" class="hidden border border-red-800/50 bg-red-900/20 p-6">
+                <p class="font-mono text-xs text-red-400/70 tracking-widest uppercase mb-1">Error</p>
+                <p id="result-error-msg" class="font-mono text-sm text-red-400"></p>
+            </div>
+
+            <!-- Probability Distribution -->
+            <div id="result-proba-section" class="border border-industrial-800 bg-industrial-900/50 p-6">
+                <h4 class="font-mono text-xs text-industrial-100/50 tracking-widest uppercase mb-4">Distribusi Probabilitas</h4>
+                <div id="result-proba-list" class="space-y-2">
+                    <!-- injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const SYMPTOM_FIELDS = [
+    'suara_bising_abnormal','getaran_berlebih','motor_cepat_panas',
+    'arus_melebihi_normal','tegangan_tidak_stabil','putaran_menurun',
+    'sulit_start','sering_trip_mcb','trip_overload_relay',
+    'efisiensi_menurun','bau_hangus','intermittent_stopping',
+    'warna_gulungan_berubah','kipas_pendingin_rusak','terminal_terbakar',
+    'bearing_aus_pecah','housing_bearing_aus','poros_shaft_aus',
+    'kebocoran_pelumas','keretakan_dudukan','sumbatan_sirip_pendingin',
+    'lubang_spi_aus',
+];
+
+const NUMERIC_FIELDS = [
+    'daya_hp_kw','jumlah_pole','temperatur_c','arus_a','tegangan_v',
+    'resistansi_isolasi_mohm','kecepatan_putaran_rpm',
+    'ketidakseimbangan_arus_pct','ketidakseimbangan_tegangan_pct','faktor_daya',
+];
+
+document.getElementById('identify-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+
+    btn.disabled = true;
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+
+    // Build payload
+    const payload = {};
+
+    // Categorical
+    payload.jenis_mesin = document.getElementById('jenis_mesin').value;
+
+    // Numeric
+    for (const field of NUMERIC_FIELDS) {
+        const el = document.getElementById(field);
+        payload[field] = el ? parseFloat(el.value) || 0 : 0;
+    }
+
+    // Symptoms (checkboxes)
+    for (const field of SYMPTOM_FIELDS) {
+        const el = document.getElementById(field);
+        payload[field] = (el && el.checked) ? 'Ya' : 'Tidak';
+    }
+
+    try {
+        const res = await fetch("{{ url_for('diagnosis_bp.identify') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        showResult(data);
+    } catch (err) {
+        showResult({ success: false, message: 'Gagal terhubung ke server. Coba lagi.' });
+    } finally {
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+    }
+});
+
+function showResult(data) {
+    const placeholder = document.getElementById('result-placeholder');
+    const card = document.getElementById('result-card');
+    const errorDiv = document.getElementById('result-error');
+    const errorMsg = document.getElementById('result-error-msg');
+    const probaSection = document.getElementById('result-proba-section');
+
+    placeholder.classList.add('hidden');
+    card.classList.remove('hidden');
+
+    if (!data.success) {
+        errorDiv.classList.remove('hidden');
+        errorMsg.textContent = data.message;
+        probaSection.classList.add('hidden');
+        document.getElementById('result-diagnosis').textContent = 'ERROR';
+        document.getElementById('result-confidence-bar').style.width = '0%';
+        document.getElementById('result-confidence-pct').textContent = '—';
+        return;
+    }
+
+    errorDiv.classList.add('hidden');
+    probaSection.classList.remove('hidden');
+
+    // Main result
+    document.getElementById('result-diagnosis').textContent = data.diagnosis;
+    const confPct = Math.round(data.confidence * 100);
+    document.getElementById('result-confidence-pct').textContent = data.confidence_pct;
+    setTimeout(() => {
+        document.getElementById('result-confidence-bar').style.width = confPct + '%';
+    }, 50);
+
+    // Color based on diagnosis
+    const diagEl = document.getElementById('result-diagnosis');
+    if (data.diagnosis === 'Motor Normal') {
+        diagEl.className = 'text-2xl font-display font-bold text-green-400 uppercase tracking-wide';
+    } else {
+        diagEl.className = 'text-2xl font-display font-bold text-neon-cyan uppercase tracking-wide';
+    }
+
+    // Probability bars
+    const probaList = document.getElementById('result-proba-list');
+    probaList.innerHTML = '';
+    for (const [label, prob] of Object.entries(data.probabilities)) {
+        const pct = Math.round(prob * 100);
+        const isTop = label === data.diagnosis;
+        probaList.innerHTML += `
+            <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-industrial-100/${isTop ? '90' : '40'} tracking-wider w-36 truncate uppercase flex-shrink-0">${label}</span>
+                <div class="flex-grow bg-industrial-800 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full ${isTop ? 'bg-neon-cyan' : 'bg-industrial-600'} transition-all duration-700" style="width: ${pct}%"></div>
+                </div>
+                <span class="font-mono text-[10px] ${isTop ? 'text-neon-cyan' : 'text-industrial-100/40'} w-8 text-right">${pct}%</span>
+            </div>
+        `;
+    }
+    // Animate bars after paint
+    setTimeout(() => {
+        probaList.querySelectorAll('div > div[style]').forEach(bar => {
+            const target = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => { bar.style.width = target; }, 50);
+        });
+    }, 10);
+}
+</script>
+{% endblock %}

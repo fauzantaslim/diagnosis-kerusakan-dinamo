@@ -6,13 +6,22 @@
     <header class="border-b border-industrial-800 bg-industrial-900/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-7xl w-full mx-auto px-8 lg:px-12 py-4 flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-neon-cyan text-industrial-900 flex items-center justify-center font-display font-bold text-xl rotate-45">
+                <a href="{{ url_for('dashboard_bp.index') }}" class="w-10 h-10 bg-neon-cyan text-industrial-900 flex items-center justify-center font-display font-bold text-xl rotate-45 hover:bg-white transition-colors">
                     <span class="-rotate-45">D</span>
-                </div>
+                </a>
                 <nav class="ml-8 hidden md:flex space-x-8 text-sm font-mono tracking-widest uppercase">
-                    <a href="#" class="text-neon-cyan border-b-2 border-neon-cyan pb-1">Home</a>
-                    <a href="#" class="text-industrial-100/60 hover:text-industrial-100 transition-colors">Identifikasi</a>
-                    <a href="#" class="text-industrial-100/60 hover:text-industrial-100 transition-colors">Riwayat</a>
+                    <a href="{{ url_for('dashboard_bp.index') }}"
+                       class="pb-1 transition-colors {% if active_page == 'home' %}text-neon-cyan border-b-2 border-neon-cyan{% else %}text-industrial-100/60 hover:text-industrial-100{% endif %}">
+                        Home
+                    </a>
+                    <a href="{{ url_for('diagnosis_bp.identify_page') }}"
+                       class="pb-1 transition-colors {% if active_page == 'identifikasi' %}text-neon-cyan border-b-2 border-neon-cyan{% else %}text-industrial-100/60 hover:text-industrial-100{% endif %}">
+                        Identifikasi
+                    </a>
+                    <a href="{{ url_for('history_bp.history_page') }}"
+                       class="pb-1 transition-colors {% if active_page == 'riwayat' %}text-neon-cyan border-b-2 border-neon-cyan{% else %}text-industrial-100/60 hover:text-industrial-100{% endif %}">
+                        Riwayat
+                    </a>
                 </nav>
             </div>
             
@@ -28,9 +37,10 @@
                     </div>
                     <span class="font-mono text-xs tracking-wider hidden sm:block">Halo: {{ current_user.nama_lengkap.split()[0] | upper }}</span>
                 </div>
-                <a href="{{ url_for('auth_bp.logout') }}" class="font-mono text-xs px-4 py-2 border border-industrial-800 text-industrial-100/70 hover:text-neon-cyan hover:border-neon-cyan/50 transition-all uppercase tracking-widest">
+                <button id="logout-btn" onclick="handleLogout()"
+                    class="font-mono text-xs px-4 py-2 border border-industrial-800 text-industrial-100/70 hover:text-neon-cyan hover:border-neon-cyan/50 transition-all uppercase tracking-widest cursor-pointer">
                     Logout
-                </a>
+                </button>
             </div>
         </div>
     </header>
@@ -49,4 +59,24 @@
         </div>
     </footer>
 </div>
+
+<script>
+async function handleLogout() {
+    const btn = document.getElementById('logout-btn');
+    btn.textContent = 'Logging out...';
+    btn.disabled = true;
+    try {
+        const res = await fetch("{{ url_for('auth_bp.logout') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (data.redirect) window.location.href = data.redirect;
+        else window.location.href = "{{ url_for('auth_bp.login') }}";
+    } catch (e) {
+        window.location.href = "{{ url_for('auth_bp.login') }}";
+    }
+}
+</script>
 {% endblock %}
+
