@@ -4,11 +4,11 @@
 {% block auth_heading %}SELAMAT DATANG{% endblock %}
 {% block auth_subheading %}Silahkan login untuk melanjutkan{% endblock %}
 {% block auth_footer_text %}Belum memiliki akun?{% endblock %}
-{% block auth_footer_url %}{{ url_for('main_bp.register') }}{% endblock %}
+{% block auth_footer_url %}{{ url_for('auth_bp.register') }}{% endblock %}
 {% block auth_footer_link_text %}Daftar Disini{% endblock %}
 
 {% block auth_form %}
-<form action="{{ url_for('main_bp.login') }}" method="POST" class="space-y-6">
+<form action="{{ url_for('auth_bp.login') }}" method="POST" class="space-y-6">
     {{ components.input('username', 'Username') }}
     {{ components.input('password', 'Password', type='password') }}
 
