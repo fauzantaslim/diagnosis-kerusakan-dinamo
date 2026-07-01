@@ -44,21 +44,6 @@
     </div>
 </div>
 
-<!-- Stats Bar -->
-<div id="stats-bar" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Total Identifikasi</span>
-        <span id="stat-total" class="font-display text-2xl font-bold text-slate-800">—</span>
-    </div>
-    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Terdeteksi Normal</span>
-        <span id="stat-normal" class="font-display text-2xl font-bold text-green-400">—</span>
-    </div>
-    <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Terdeteksi Rusak</span>
-        <span id="stat-rusak" class="font-display text-2xl font-bold text-red-400">—</span>
-    </div>
-</div>
 
 <!-- Table -->
 <div class="border border-slate-200 bg-slate-100/50">
@@ -103,17 +88,34 @@
 </div>
 
 <!-- Pagination -->
-<div id="pagination" class="hidden mt-6 flex items-center justify-between font-mono text-xs text-slate-500">
-    <span id="pagination-info">—</span>
-    <div class="flex gap-2">
-        <button id="prev-btn" onclick="changePage(-1)"
-            class="px-3 py-1.5 border border-slate-200 hover:border-blue-600/50 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
-            ← Prev
-        </button>
-        <button id="next-btn" onclick="changePage(1)"
-            class="px-3 py-1.5 border border-slate-200 hover:border-blue-600/50 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors tracking-widest uppercase">
-            Next →
-        </button>
+<div id="pagination" class="hidden mt-6 flex flex-col md:flex-row items-center justify-between text-sm text-slate-600 border-t border-b border-slate-200 py-3 font-sans bg-white/50 px-4">
+    <div class="flex items-center gap-3">
+        <span>Tampilkan</span>
+        <select id="per-page-select" onchange="changePerPage()" class="border border-slate-300 rounded px-2 py-1 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer">
+            <option value="8" selected>8</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+        </select>
+        <span>Item</span>
+        <div class="w-px h-4 bg-slate-300 mx-2"></div>
+        <span>dari total <span id="stat-total" class="font-bold text-slate-800">0</span></span>
+    </div>
+
+    <div class="flex items-center gap-3 mt-4 md:mt-0">
+        <span>Halaman</span>
+        <select id="page-select" onchange="jumpToPage()" class="border border-slate-300 rounded px-2 py-1 text-sm bg-white focus:outline-none focus:border-blue-500 cursor-pointer">
+        </select>
+        <span>dari <span id="stat-total-pages" class="font-bold text-slate-800">1</span></span>
+        <div class="w-px h-4 bg-slate-300 mx-2"></div>
+        <div class="flex gap-2">
+            <button id="prev-btn" onclick="changePage(-1)" class="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="next-btn" onclick="changePage(1)" class="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -145,7 +147,9 @@ async function loadHistory(page = 1) {
     try {
         const startDate = document.getElementById('start_date').value;
         const endDate = document.getElementById('end_date').value;
-        let url = `{{ url_for('history_bp.get_history') }}?page=${page}&per_page=15`;
+        const perPageSelect = document.getElementById('per-page-select');
+        const perPage = perPageSelect ? perPageSelect.value : 8;
+        let url = `{{ url_for('history_bp.get_history') }}?page=${page}&per_page=${perPage}`;
         if (startDate) url += `&start_date=${startDate}`;
         if (endDate) url += `&end_date=${endDate}`;
 
@@ -159,11 +163,16 @@ async function loadHistory(page = 1) {
 
         document.getElementById('loading-state').classList.add('hidden');
 
-        // Update stats
-        const normal = items.filter(i => i.diagnosis === 'Motor Normal').length;
+        // Update pagination stats
         document.getElementById('stat-total').textContent = total;
-        document.getElementById('stat-normal').textContent = items.filter(i => i.diagnosis === 'Motor Normal').length;
-        document.getElementById('stat-rusak').textContent = items.filter(i => i.diagnosis !== 'Motor Normal').length;
+        const displayPages = pages === 0 ? 1 : pages;
+        document.getElementById('stat-total-pages').textContent = displayPages;
+        
+        const pageSelect = document.getElementById('page-select');
+        pageSelect.innerHTML = '';
+        for(let i = 1; i <= displayPages; i++) {
+            pageSelect.innerHTML += `<option value="${i}" ${i === page ? 'selected' : ''}>${i}</option>`;
+        }
 
         if (items.length === 0) {
             document.getElementById('empty-state').classList.remove('hidden');
@@ -204,12 +213,9 @@ async function loadHistory(page = 1) {
         `).join('');
 
         // Pagination
-        const start = (page - 1) * per_page + 1;
-        const end = Math.min(page * per_page, total);
-        document.getElementById('pagination-info').textContent = `Menampilkan ${start}–${end} dari ${total} data`;
         document.getElementById('prev-btn').disabled = page <= 1;
         document.getElementById('next-btn').disabled = page >= pages;
-        if (total > per_page) document.getElementById('pagination').classList.remove('hidden');
+        if (total > 0) document.getElementById('pagination').classList.remove('hidden');
 
     } catch (err) {
         document.getElementById('loading-state').classList.add('hidden');
@@ -220,6 +226,15 @@ async function loadHistory(page = 1) {
 function changePage(delta) {
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) loadHistory(newPage);
+}
+
+function changePerPage() {
+    loadHistory(1);
+}
+
+function jumpToPage() {
+    const page = parseInt(document.getElementById('page-select').value) || 1;
+    loadHistory(page);
 }
 
 function applyFilter() {

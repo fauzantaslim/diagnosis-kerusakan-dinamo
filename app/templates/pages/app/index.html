@@ -20,27 +20,9 @@
                 </div>
             </div>
             
-            <div class="w-full lg:w-1/2 relative h-64 lg:h-96 border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden group">
-                <!-- High-tech abstract visual -->
-                <div class="absolute inset-0 bg-grid-pattern opacity-50"></div>
-                <div class="absolute inset-0 bg-gradient-to-tr from-slate-50 via-transparent to-blue-700/10"></div>
-                
-                <!-- Radar sweep effect -->
-                <div class="absolute inset-0 border-blue-600/20 rounded-full scale-[2] origin-center rotate-0 group-hover:rotate-180 transition-transform duration-[3s] ease-linear">
-                    <div class="absolute top-0 right-1/2 w-1/2 h-1/2 bg-gradient-to-bl from-blue-600/10 to-transparent"></div>
-                </div>
-
-                <!-- Central core -->
-                <div class="relative w-32 h-32 border border-blue-600/30 rounded-full flex items-center justify-center">
-                    <div class="w-24 h-24 border border-blue-600/50 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
-                        <div class="w-16 h-16 border-t border-b border-blue-600 rounded-full"></div>
-                    </div>
-                    <div class="absolute w-4 h-4 bg-blue-600 shadow-[0_0_15px_#66FCF1]"></div>
-                </div>
-                
-                <div class="absolute bottom-4 left-4 font-mono text-[10px] text-blue-600/50 tracking-widest">
-                    SENSOR ARRAY: ONLINE
-                </div>
+            <div class="w-full lg:w-1/2 relative h-64 lg:h-96 flex items-center justify-center group">
+                <!-- Image -->
+                <img src="{{ url_for('static', filename='images/dinamo.png') }}" alt="Dinamo Industri" class="relative z-10 w-full max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-500">
             </div>
         </section>
 
@@ -48,8 +30,8 @@
         <section class="relative z-10">
             <div class="flex justify-between items-end mb-6 border-b border-slate-200 pb-4">
                 <div>
-                    <h2 class="text-2xl font-display font-bold text-slate-800 uppercase tracking-wide">Log Terbaru</h2>
-                    <p class="font-mono text-xs text-slate-500 mt-1">Data riwayat identifikasi 24 jam terakhir</p>
+                    <h2 class="text-2xl font-display font-bold text-slate-800 uppercase tracking-wide">Histori Terbaru</h2>
+                    
                 </div>
                 <a href="{{ url_for('history_bp.history_page') }}" class="font-mono text-xs text-blue-600 hover:text-blue-800 transition-colors tracking-widest uppercase flex items-center gap-1">
                     Semua Data <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
