@@ -11,17 +11,17 @@
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-1 h-8 bg-blue-600"></div>
                 <h1 class="text-3xl lg:text-4xl font-display font-bold text-slate-800 uppercase tracking-wide">
-                    Riwayat Diagnosis
+                    Riwayat Identifikasi
                 </h1>
             </div>
             <p class="font-mono text-sm text-slate-500 ml-4 border-l border-slate-200 pl-4">
-                Semua hasil diagnosis yang pernah dilakukan.
+                Semua hasil identifikasi yang pernah dilakukan.
             </p>
         </div>
         <a href="{{ url_for('diagnosis_bp.identify_page') }}"
             class="flex items-center justify-center md:justify-start gap-2 font-mono text-xs px-5 py-3 md:py-2.5 bg-blue-600 text-white font-bold uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-colors w-full md:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Diagnosa Baru
+            Identifikasi Baru
         </a>
     </div>
 </section>
@@ -47,7 +47,7 @@
 <!-- Stats Bar -->
 <div id="stats-bar" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
     <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
-        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Total Diagnosa</span>
+        <span class="font-mono text-[10px] text-slate-400 tracking-widest uppercase">Total Identifikasi</span>
         <span id="stat-total" class="font-display text-2xl font-bold text-slate-800">—</span>
     </div>
     <div class="border border-slate-200 bg-slate-100/50 p-4 flex flex-col gap-1">
@@ -70,7 +70,7 @@
                     <th class="p-4 border-b border-slate-200 font-bold">ID</th>
                     <th class="p-4 border-b border-slate-200 font-bold">Timestamp</th>
                     <th class="p-4 border-b border-slate-200 font-bold">Jenis Mesin</th>
-                    <th class="p-4 border-b border-slate-200 font-bold">Hasil Diagnosis</th>
+                    <th class="p-4 border-b border-slate-200 font-bold">Hasil Identifikasi</th>
                     <th class="p-4 border-b border-slate-200 font-bold text-center">Confidence</th>
                     <th class="p-4 border-b border-slate-200 font-bold text-center">Aksi</th>
                 </tr>
@@ -86,9 +86,9 @@
         <svg class="w-12 h-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
         </svg>
-        <p class="font-mono text-xs text-slate-400 tracking-widest uppercase">Belum ada riwayat diagnosis</p>
+        <p class="font-mono text-xs text-slate-400 tracking-widest uppercase">Belum ada riwayat identifikasi</p>
         <a href="{{ url_for('diagnosis_bp.identify_page') }}" class="mt-4 font-mono text-xs text-blue-600 hover:text-blue-800 transition-colors tracking-widest uppercase">
-            Mulai Diagnosa →
+            Mulai Identifikasi →
         </a>
     </div>
 
@@ -121,7 +121,7 @@
 <div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-50/90 backdrop-blur-sm">
     <div class="w-full max-w-2xl border border-blue-600/30 bg-slate-50 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between p-6 border-b border-slate-200">
-            <h3 class="font-display font-bold text-lg text-slate-800 uppercase tracking-wide">Detail Diagnosis</h3>
+            <h3 class="font-display font-bold text-lg text-slate-800 uppercase tracking-wide">Detail Identifikasi</h3>
             <button onclick="closeModal()" class="text-slate-400 hover:text-blue-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
@@ -248,7 +248,7 @@ async function showDetail(id) {
         content.innerHTML = `
             <!-- Result -->
             <div class="border border-blue-600/20 bg-blue-600/5 p-4">
-                <p class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-1">Hasil Diagnosis</p>
+                <p class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-1">Hasil Identifikasi</p>
                 <p class="font-display text-xl font-bold ${d.diagnosis === 'Motor Normal' ? 'text-green-600' : 'text-blue-600'} uppercase">${d.diagnosis}</p>
                 <p class="font-mono text-sm text-slate-500 mt-1">Confidence: <span class="text-blue-600 font-bold">${d.confidence_pct}</span></p>
                 <p class="font-mono text-xs text-slate-400 mt-1">${d.tanggal}</p>
