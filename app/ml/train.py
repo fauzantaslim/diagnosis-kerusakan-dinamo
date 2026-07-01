@@ -72,12 +72,13 @@ def train():
     print("\n[5/5] Melatih model Random Forest...")
     model = RandomForestClassifier(
         n_estimators=200,
-        max_depth=None,
-        min_samples_split=2,
-        min_samples_leaf=1,
+        max_depth=10,
+        min_samples_split=5,
+        min_samples_leaf=2,
         class_weight="balanced",
         random_state=42,
         n_jobs=-1,
+        oob_score=True,
     )
     model.fit(X_train, y_train)
 
@@ -85,6 +86,7 @@ def train():
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
     print(f"\n{'='*60}")
+    print(f"  OOB SCORE       : {model.oob_score_ * 100:.2f}%")
     print(f"  AKURASI TEST SET: {acc * 100:.2f}%")
     print(f"{'='*60}")
     print("\nClassification Report:")
