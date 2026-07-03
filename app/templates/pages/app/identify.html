@@ -20,7 +20,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
     <!-- Form Column -->
     <div class="lg:col-span-3">
-        <form id="identify-form" novalidate class="space-y-8">
+        <form id="identify-form" class="space-y-8">
 
             <!-- Spesifikasi Mesin -->
             <div class="border border-slate-200 bg-slate-100/50 p-6">
@@ -38,8 +38,8 @@
                     <div class="md:col-span-1">
                         {{ components.select('jenis_mesin', 'Jenis Mesin', options=jenis_mesin_options) }}
                     </div>
-                    {{ components.input('daya_hp_kw', 'Daya (HP)', type='number', value='0', step='0.5', min='0') }}
-                    {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='0', step='1', min='0') }}
+                    {{ components.input('daya_hp_kw', 'Daya (HP)', type='number', value='', step='0.5', min='0') }}
+                    {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='', step='1', min='0') }}
                 </div>
             </div>
 
@@ -51,17 +51,17 @@
                 </h2>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {% set measurements = [
-                        ('temperatur_c', 'Temperatur (°C)', '0'),
-                        ('arus_a', 'Arus (A)', '0'),
-                        ('tegangan_v', 'Tegangan (V)', '0'),
-                        ('resistansi_isolasi_mohm', 'R. Isolasi (MΩ)', '0'),
-                        ('kecepatan_putaran_rpm', 'Putaran (RPM)', '0'),
-                        ('ketidakseimbangan_arus_pct', 'Ketdksbgn Arus (%)', '0'),
-                        ('ketidakseimbangan_tegangan_pct', 'Ketdksbgn Tgn (%)', '0'),
-                        ('faktor_daya', 'Faktor Daya', '0'),
+                        ('temperatur_c', 'Temperatur (°C)', ''),
+                        ('arus_a', 'Arus (A)', ''),
+                        ('tegangan_v', 'Tegangan (V)', ''),
+                        ('resistansi_isolasi_mohm', 'R. Isolasi (MΩ)', ''),
+                        ('kecepatan_putaran_rpm', 'Putaran (RPM)', ''),
+                        ('ketidakseimbangan_arus_pct', 'Ketdksbgn Arus (%)', ''),
+                        ('ketidakseimbangan_tegangan_pct', 'Ketdksbgn Tgn (%)', ''),
+                        ('faktor_daya', 'Faktor Daya', ''),
                     ] %}
                     {% for field_name, label, placeholder in measurements %}
-                    {{ components.input(field_name, label, type='number', value=placeholder, step='any') }}
+                    {{ components.input(field_name, label, type='number', value=placeholder, step='any', min='0') }}
                     {% endfor %}
                 </div>
             </div>
@@ -172,7 +172,7 @@
             
             <!-- Feature Importance -->
             <div id="result-fi-section" class="hidden border border-slate-200 bg-slate-100/50 p-6">
-                <h4 class="font-mono text-xs text-slate-500 tracking-widest uppercase mb-4" title="Dihitung menggunakan metode Permutation Feature Importance secara Global">Karakteristik Penentu (Permutation Importance)</h4>
+                <h4 class="font-mono text-xs text-slate-500 tracking-widest uppercase mb-4" title="Dihitung menggunakan metode SHAP untuk penjelasan lokal spesifik pada input">Karakteristik Penentu (SHAP)</h4>
                 <div id="result-fi-list" class="space-y-2">
                     <!-- injected by JS -->
                 </div>
@@ -258,6 +258,7 @@ function showResult(data) {
         errorDiv.classList.remove('hidden');
         errorMsg.textContent = data.message;
         probaSection.classList.add('hidden');
+        document.getElementById('result-fi-section').classList.add('hidden');
         document.getElementById('result-diagnosis').textContent = 'ERROR';
         document.getElementById('result-confidence-bar').style.width = '0%';
         document.getElementById('result-confidence-pct').textContent = '—';

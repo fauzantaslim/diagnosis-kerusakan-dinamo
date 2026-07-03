@@ -1,8 +1,9 @@
 {% macro input(name, label, type='text', required=True, value='', step='', min='', max='') %}
 <div class="relative group" x-data="{ show: false }">
     <label for="{{ name }}"
-        class="block text-xs font-mono text-blue-600/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-blue-600">{{
-        label }}</label>
+        class="block text-xs font-mono text-blue-600/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-blue-600">
+        {{ label }}{% if required %}<span class="text-red-500 ml-1">*</span>{% endif %}
+    </label>
     <div class="relative">
         <!-- Decorator corner lines -->
         <div
@@ -64,7 +65,9 @@
 
 {% macro select(name, label, options=[], required=True) %}
 <div class="relative group">
-    <label for="{{ name }}" class="block text-xs font-mono text-blue-600/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-blue-600">{{ label }}</label>
+    <label for="{{ name }}" class="block text-xs font-mono text-blue-600/70 uppercase tracking-widest mb-1 transition-colors group-focus-within:text-blue-600">
+        {{ label }}{% if required %}<span class="text-red-500 ml-1">*</span>{% endif %}
+    </label>
     <div class="relative">
         <!-- Decorator corner lines -->
         <div class="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-blue-600 opacity-0 group-focus-within:opacity-100 transition-opacity z-10 pointer-events-none"></div>

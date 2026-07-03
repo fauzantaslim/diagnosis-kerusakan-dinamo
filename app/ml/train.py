@@ -14,6 +14,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from imblearn.over_sampling import SMOTE
 
 # Tambahkan root project ke path agar bisa import preprocessing
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -66,7 +67,13 @@ def train():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
-    print(f"      Training: {len(X_train)} | Testing: {len(X_test)}")
+    print(f"      Training sebelum SMOTE: {len(X_train)} | Testing: {len(X_test)}")
+
+    # 4.5. SMOTE
+    print("      Menerapkan SMOTE pada data training...")
+    smote = SMOTE(random_state=42)
+    X_train, y_train = smote.fit_resample(X_train, y_train)
+    print(f"      Training sesudah SMOTE: {len(X_train)}")
 
     # 5. Training model
     print("\n[5/5] Melatih model Random Forest...")

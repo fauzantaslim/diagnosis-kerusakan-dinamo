@@ -14,6 +14,7 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 from app.ml.preprocessing import preprocess_input, FEATURE_COLS, SYMPTOM_COLS, NUMERIC_COLS
+from app.ml.feature_importance import get_local_shap_importances
 
 # --- Paths ---
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
@@ -71,10 +72,13 @@ def predict(input_dict: dict) -> dict:
     probabilities = {label: float(prob) for label, prob in zip(class_labels, proba_array)}
     confidence = float(max(proba_array))
 
+    local_importances = get_local_shap_importances(df_input, predicted_label, top_n=5)
+
     return {
         "diagnosis": predicted_label,
         "confidence": confidence,
         "probabilities": probabilities,
+        "local_importances": local_importances,
     }
 
 

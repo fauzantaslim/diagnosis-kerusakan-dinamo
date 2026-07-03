@@ -20,7 +20,11 @@ def predict_diagnosis(user_id, data):
     except Exception:
         pass  # Jangan gagalkan response jika penyimpanan bermasalah
         
-    # Tambahkan global permutation feature importance
-    result["feature_importances"] = ml_fi.get_feature_importances(top_n=5)
+    # Gunakan local feature importance (dari predict.py)
+    result["feature_importances"] = result.get("local_importances", [])
     
+    # Hapus key yang tidak perlu di return ke HTTP
+    if "local_importances" in result:
+        del result["local_importances"]
+        
     return result

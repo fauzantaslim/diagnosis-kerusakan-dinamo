@@ -16,6 +16,58 @@ def identify():
             "message": "Request body kosong. Kirim data dalam format JSON.",
         }), 400
 
+    required_fields = [
+        "jenis_mesin", "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a",
+        "tegangan_v", "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
+        "ketidakseimbangan_arus_pct", "ketidakseimbangan_tegangan_pct", "faktor_daya"
+    ]
+
+    missing_fields = [field for field in required_fields if field not in data or data[field] == "" or data[field] is None]
+    
+    if missing_fields:
+        return jsonify({
+            "success": False,
+            "message": f"Field wajib tidak boleh kosong: {', '.join(missing_fields)}"
+        }), 400
+
+    numeric_fields = [
+        "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a",
+        "tegangan_v", "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
+        "ketidakseimbangan_arus_pct", "ketidakseimbangan_tegangan_pct", "faktor_daya"
+    ]
+    invalid_numeric_fields = []
+    for field in numeric_fields:
+        if field in data and data[field] != "":
+            try:
+                if float(data[field]) < 0:
+                    invalid_numeric_fields.append(field)
+            except ValueError:
+                pass
+                
+    if invalid_numeric_fields:
+        return jsonify({
+            "success": False,
+            "message": f"Spesifikasi mesin dan nilai pengukuran tidak boleh negatif (kurang dari 0): {', '.join(invalid_numeric_fields)}"
+        }), 400
+
+    strictly_positive_fields = [
+        "daya_hp_kw", "jumlah_pole", "tegangan_v", "arus_a", "kecepatan_putaran_rpm"
+    ]
+    invalid_zero_fields = []
+    for field in strictly_positive_fields:
+        if field in data and data[field] != "":
+            try:
+                if float(data[field]) == 0:
+                    invalid_zero_fields.append(field)
+            except ValueError:
+                pass
+                
+    if invalid_zero_fields:
+        return jsonify({
+            "success": False,
+            "message": f"Nilai tidak masuk akal (tidak boleh 0): {', '.join(invalid_zero_fields)}"
+        }), 400
+
     try:
         result = diagnosis_service.predict_diagnosis(current_user.id, data)
     except FileNotFoundError as e:
