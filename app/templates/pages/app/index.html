@@ -13,7 +13,7 @@
                     SELAMAT<br>DATANG
                 </h1>
                 <p class="font-mono text-sm text-slate-500 leading-relaxed mb-8 border-l-2 border-slate-200 pl-4">
-                    Pantau status operasional dan kesehatan dinamo industri secara real-time. Inisiasi protokol identifikasi baru untuk menganalisis anomali getaran, suhu, dan arus listrik.
+                    Sistem untuk mendiagnosis potensi kerusakan pada dinamo industri. Masukkan data spesifikasi, pengukuran kelistrikan, dan gejala fisik untuk mendapatkan hasil analisis prediksi.
                 </p>
                 <div class="inline-block">
                     {{ components.button('Mulai Identifikasi <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>', type='button', onclick="window.location.href='" ~ url_for('diagnosis_bp.identify_page') ~ "'", classes='!w-auto !py-3') }}

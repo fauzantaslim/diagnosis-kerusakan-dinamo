@@ -71,55 +71,10 @@ def predict(input_dict: dict) -> dict:
     probabilities = {label: float(prob) for label, prob in zip(class_labels, proba_array)}
     confidence = float(max(proba_array))
 
-    # --- Local Feature Importance (Leave-One-Out) ---
-    c_idx = list(class_labels).index(predicted_label)
-    base_prob = proba_array[c_idx]
-    
-    local_importances = []
-    
-    # Hanya hitung untuk gejal  a dan fitur numerik, abaikan kategorikal (jenis_mesin)
-    target_cols = SYMPTOM_COLS + NUMERIC_COLS
-    
-    for col in target_cols:
-        if col not in df_input.columns:
-            continue
-            
-        original_val = df_input.at[0, col]
-        
-        # Jika nilai fitur sudah 0 (gejala 'Tidak' atau numerik sama dengan mean), lewati
-        if original_val == 0.0:
-            continue
-            
-        # Buat copy dan set ke baseline (0.0)
-        df_temp = df_input.copy()
-        df_temp.at[0, col] = 0.0
-        
-        # Prediksi ulang
-        new_prob = _model.predict_proba(df_temp)[0][c_idx]
-        
-        # Drop probabilitas (seberapa besar fitur ini mendongkrak probabilitas)
-        drop = base_prob - new_prob
-        
-        # Jika drop > 0, artinya fitur ini membantu menaikkan probabilitas diagnosis
-        if drop > 0:
-            local_importances.append({"feature": col, "drop": drop})
-            
-    # Normalisasi agar total = 100%
-    total_drop = sum(item["drop"] for item in local_importances)
-    if total_drop > 0:
-        for item in local_importances:
-            item["importance"] = round((item["drop"] / total_drop) * 100, 2)
-            del item["drop"]
-    else:
-        local_importances = []
-        
-    local_importances.sort(key=lambda x: x["importance"], reverse=True)
-
     return {
         "diagnosis": predicted_label,
         "confidence": confidence,
         "probabilities": probabilities,
-        "local_importances": local_importances[:5], # Ambil Top 5
     }
 
 
