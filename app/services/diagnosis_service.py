@@ -7,6 +7,14 @@ def predict_diagnosis(user_id, data):
     Melakukan prediksi diagnosis dan menyimpan riwayat.
     Returns: dictionary hasil prediksi.
     """
+    # Validasi minimal ada satu gejala yang dipilih
+    has_symptom = any(value == "Ya" for key, value in data.items())
+    if not has_symptom:
+        return {
+            "success": False,
+            "message": "Validasi gagal: Mohon pilih minimal satu gejala yang teridentifikasi."
+        }
+
     # Prediksi menggunakan ML
     result = ml_predict.predict(data)
     

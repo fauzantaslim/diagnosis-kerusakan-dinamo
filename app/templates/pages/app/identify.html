@@ -201,6 +201,22 @@ const NUMERIC_FIELDS = [
 
 document.getElementById('identify-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+
+    // Validasi minimal ada satu gejala yang dipilih
+    let symptomChecked = false;
+    for (const field of SYMPTOM_FIELDS) {
+        const el = document.getElementById(field);
+        if (el && el.checked) {
+            symptomChecked = true;
+            break;
+        }
+    }
+
+    if (!symptomChecked) {
+        alert("Mohon pilih minimal satu gejala yang teridentifikasi.");
+        return;
+    }
+
     const btn = document.getElementById('submit-btn');
     const btnText = document.getElementById('btn-text');
     const spinner = document.getElementById('btn-spinner');
