@@ -43,6 +43,15 @@ document.getElementById('register-form').addEventListener('submit', async functi
         confirm_password: document.getElementById('confirm_password').value,
     };
 
+    if (payload.password.length < 8) {
+        errorBanner.textContent = "Password minimal 8 karakter.";
+        errorBanner.classList.remove('hidden');
+        btn.disabled = false;
+        btnText.textContent = 'Daftar';
+        spinner.classList.add('hidden');
+        return;
+    }
+
     try {
         const res = await fetch("{{ url_for('auth_bp.register') }}", {
             method: 'POST',

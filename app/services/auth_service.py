@@ -12,6 +12,9 @@ def authenticate_user(username, password):
     return False, None, "Login gagal. Periksa kembali username dan password Anda."
 
 def register_new_user(nama_lengkap, username, password, confirm_password):
+    if len(password) < 8:
+        return False, "Password minimal 8 karakter."
+
     if password != confirm_password:
         return False, "Password dan Konfirmasi Password tidak cocok."
         
