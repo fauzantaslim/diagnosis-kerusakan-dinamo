@@ -33,7 +33,6 @@ from app.ml.preprocessing import (
 DATASET_PATH = os.path.join(BASE_DIR, "dataset", "dataset_dummy.xlsx")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
 MODEL_PATH = os.path.join(MODEL_DIR, "rf_model.pkl")
-SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
 ENCODERS_PATH = os.path.join(MODEL_DIR, "label_encoders.pkl")
 
 
@@ -57,10 +56,10 @@ def train():
     print(f"      Label unik ({len(y.unique())}): {sorted(y.unique())}")
 
     # 3. Fit preprocessors & transform fitur
-    print("\n[3/5] Melakukan preprocessing (encoding + scaling)...")
-    scaler, label_encoders = fit_preprocessors(X_raw)
-    X = transform_features(X_raw.copy(), scaler, label_encoders)
-    print("      Preprocessing selesai.")
+    print("\n[3/5] Melakukan preprocessing (encoding)...")
+    label_encoders = fit_preprocessors(X_raw)
+    X = transform_features(X_raw.copy(), label_encoders)
+    print("      Preprocessing selesai (tanpa scaling).")
 
     # 4. Train / Test split
     print("\n[4/5] Membagi data training dan testing (80:20)...")
@@ -117,11 +116,9 @@ def train():
 
     # Simpan model & preprocessors
     joblib.dump(model, MODEL_PATH)
-    joblib.dump(scaler, SCALER_PATH)
     joblib.dump(label_encoders, ENCODERS_PATH)
 
     print(f"\nModel disimpan ke  : {MODEL_PATH}")
-    print(f"Scaler disimpan ke : {SCALER_PATH}")
     print(f"Encoders disimpan  : {ENCODERS_PATH}")
 
     # Visualisasi dengan Graphviz
@@ -189,7 +186,7 @@ def train():
 
     print("\nTraining selesai!")
 
-    return model, scaler, label_encoders, acc
+    return model, label_encoders, acc
 
 
 if __name__ == "__main__":

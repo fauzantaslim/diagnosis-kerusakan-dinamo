@@ -1,10 +1,11 @@
 """
 Preprocessing module untuk pipeline Machine Learning Diagnosis Kerusakan Dinamo.
-Bertugas membaca dataset Excel, membersihkan data, dan melakukan encoding/scaling.
+Bertugas membaca dataset Excel, membersihkan data, dan melakukan encoding.
+Catatan: StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
 """
 
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 
 # Mapping nama kolom Excel -> nama atribut Python/model
 COLUMN_RENAME_MAP = {
@@ -56,7 +57,7 @@ SYMPTOM_COLS = [
     "lubang_spi_aus",
 ]
 
-# Kolom numerik (di-scale dengan StandardScaler)
+# Kolom numerik (tanpa scaling — RF tidak membutuhkan)
 NUMERIC_COLS = [
     "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a", "tegangan_v",
     "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
@@ -103,30 +104,27 @@ def encode_symptoms(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def fit_preprocessors(df: pd.DataFrame) -> tuple:
+def fit_preprocessors(df: pd.DataFrame) -> dict:
     """
-    Membuat dan menyesuaikan (fit) preprocessors dari data training.
+    Membuat dan menyesuaikan (fit) LabelEncoder untuk kolom kategorikal.
+    StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
     Returns:
-        scaler        : StandardScaler yang sudah di-fit
         label_encoders: dict {col_name: LabelEncoder} yang sudah di-fit
     """
-    scaler = StandardScaler()
-    scaler.fit(df[NUMERIC_COLS])
-
     label_encoders = {}
     for col in CATEGORICAL_COLS:
         le = LabelEncoder()
         le.fit(df[col].astype(str))
         label_encoders[col] = le
 
-    return scaler, label_encoders
+    return label_encoders
 
 
-def transform_features(df: pd.DataFrame, scaler: StandardScaler, label_encoders: dict) -> pd.DataFrame:
+def transform_features(df: pd.DataFrame, label_encoders: dict) -> pd.DataFrame:
     """
     Menerapkan transformasi pada fitur:
     - Gejala: Ya/Tidak -> 1/0
-    - Numerik: StandardScaler
+    - Numerik: dibiarkan asli (tanpa scaling)
     - Kategorikal: LabelEncoder
     """
     df = encode_symptoms(df)
@@ -135,15 +133,14 @@ def transform_features(df: pd.DataFrame, scaler: StandardScaler, label_encoders:
         if col in df.columns:
             df[col] = le.transform(df[col].astype(str))
 
-    df[NUMERIC_COLS] = scaler.transform(df[NUMERIC_COLS])
-
     return df
 
 
-def preprocess_input(input_dict: dict, scaler: StandardScaler, label_encoders: dict) -> pd.DataFrame:
+def preprocess_input(input_dict: dict, label_encoders: dict) -> pd.DataFrame:
     """
     Menerima satu baris input dari form user (dict),
     melakukan preprocessing, dan mengembalikan DataFrame siap-prediksi.
+    StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
     """
     row = {}
 
@@ -152,7 +149,7 @@ def preprocess_input(input_dict: dict, scaler: StandardScaler, label_encoders: d
         val = input_dict.get(col, "Tidak")
         row[col] = 1 if str(val).lower() in ("ya", "1", "true") else 0
 
-    # Numerik
+    # Numerik (nilai asli, tanpa scaling)
     for col in NUMERIC_COLS:
         row[col] = float(input_dict.get(col, 0))
 
@@ -166,6 +163,5 @@ def preprocess_input(input_dict: dict, scaler: StandardScaler, label_encoders: d
             row[col] = 0
 
     df_input = pd.DataFrame([row], columns=FEATURE_COLS)
-    df_input[NUMERIC_COLS] = scaler.transform(df_input[NUMERIC_COLS])
 
     return df_input

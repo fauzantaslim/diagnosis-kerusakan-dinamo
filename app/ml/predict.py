@@ -19,18 +19,16 @@ from app.ml.feature_importance import get_local_shap_importances
 # --- Paths ---
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
 MODEL_PATH = os.path.join(MODEL_DIR, "rf_model.pkl")
-SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
 ENCODERS_PATH = os.path.join(MODEL_DIR, "label_encoders.pkl")
 
 # Cache: model dan preprocessors dimuat sekali saja saat modul pertama kali di-import
 _model = None
-_scaler = None
 _label_encoders = None
 
 
 def _load_artifacts():
     """Memuat model dan preprocessors dari disk (lazy loading)."""
-    global _model, _scaler, _label_encoders
+    global _model, _label_encoders
 
     if _model is None:
         if not os.path.exists(MODEL_PATH):
@@ -39,7 +37,6 @@ def _load_artifacts():
                 "Jalankan terlebih dahulu: python -m app.ml.train"
             )
         _model = joblib.load(MODEL_PATH)
-        _scaler = joblib.load(SCALER_PATH)
         _label_encoders = joblib.load(ENCODERS_PATH)
 
 
@@ -62,7 +59,7 @@ def predict(input_dict: dict) -> dict:
     """
     _load_artifacts()
 
-    df_input = preprocess_input(input_dict, _scaler, _label_encoders)
+    df_input = preprocess_input(input_dict, _label_encoders)
 
     # Prediksi
     predicted_label = _model.predict(df_input)[0]
