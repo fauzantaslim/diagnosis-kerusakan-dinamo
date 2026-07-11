@@ -97,10 +97,23 @@ def train():
     print(f"  AKURASI TEST SET: {acc * 100:.2f}%")
     print(f"{'='*60}")
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
+    report_str = classification_report(y_test, y_pred)
+    print(report_str)
 
     print("\nConfusion Matrix:")
     print(confusion_matrix(y_test, y_pred))
+
+
+    # Simpan metrik ke file Excel (.xlsx)
+    try:
+        report_dict = classification_report(y_test, y_pred, output_dict=True)
+        df_metrics = pd.DataFrame(report_dict).transpose()
+        df_metrics = df_metrics.round(4) # Rapikan angka desimal
+        excel_path = os.path.join(MODEL_DIR, "evaluation_metrics.xlsx")
+        df_metrics.to_excel(excel_path, sheet_name="Metrics")
+        print(f"      Metrik evaluasi berhasil diekspor ke: {excel_path}")
+    except Exception as e:
+        print(f"      Gagal mengekspor metrik ke Excel: {e}")
 
     # Simpan model & preprocessors
     joblib.dump(model, MODEL_PATH)
