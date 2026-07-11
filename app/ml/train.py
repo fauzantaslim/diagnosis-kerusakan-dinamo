@@ -110,6 +110,70 @@ def train():
     print(f"\nModel disimpan ke  : {MODEL_PATH}")
     print(f"Scaler disimpan ke : {SCALER_PATH}")
     print(f"Encoders disimpan  : {ENCODERS_PATH}")
+
+    # Visualisasi dengan Graphviz
+    print("\n[6/5] Membuat visualisasi salah satu tree (Decision Tree)...")
+    try:
+        from sklearn.tree import export_graphviz
+        import graphviz
+        
+        # Ekstrak tree pertama (indeks 0) dari Random Forest
+        estimator = model.estimators_[0]
+        
+        # Ekspor menjadi string format dot
+        dot_data = export_graphviz(
+            estimator, 
+            out_file=None, 
+            feature_names=FEATURE_COLS,
+            class_names=sorted(y.unique().astype(str)),
+            filled=True, 
+            rounded=True, 
+            special_characters=True
+        )
+        
+        graph = graphviz.Source(dot_data)
+        
+        # Render ke bentuk gambar PNG
+        viz_path = os.path.join(MODEL_DIR, "rf_tree_viz")
+        graph.render(viz_path, format="png", cleanup=True)
+        print(f"      Visualisasi tree berhasil disimpan ke: {viz_path}.png")
+    except ImportError:
+        print("      Modul graphviz tidak ditemukan. Lewati visualisasi.")
+        print("      Jalankan 'pip install graphviz' untuk mengaktifkannya.")
+    except Exception as e:
+        print(f"      Gagal membuat visualisasi graphviz: {e}")
+        print("      Pastikan aplikasi Graphviz sudah diinstal di sistem (Windows/Linux) dan ditambahkan ke PATH.")
+
+    # Visualisasi Confusion Matrix
+    print("\n[7/5] Membuat visualisasi Confusion Matrix...")
+    try:
+        import matplotlib
+        matplotlib.use('Agg') # Gunakan backend non-interaktif
+        import matplotlib.pyplot as plt
+        from sklearn.metrics import ConfusionMatrixDisplay
+        
+        cm = confusion_matrix(y_test, y_pred)
+        labels = sorted(y.unique().astype(str))
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        
+        # Plot dengan ukuran figure yang cukup besar
+        fig, ax = plt.subplots(figsize=(10, 8))
+        disp.plot(cmap='Blues', ax=ax, xticks_rotation=45)
+        
+        plt.title('Confusion Matrix - Random Forest')
+        plt.tight_layout()
+        
+        cm_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
+        plt.savefig(cm_path, dpi=300)
+        plt.close()
+        
+        print(f"      Visualisasi Confusion Matrix berhasil disimpan ke: {cm_path}")
+    except ImportError:
+        print("      Modul matplotlib tidak ditemukan. Lewati visualisasi confusion matrix.")
+        print("      Jalankan 'pip install matplotlib' untuk mengaktifkannya.")
+    except Exception as e:
+        print(f"      Gagal membuat visualisasi confusion matrix: {e}")
+
     print("\nTraining selesai!")
 
     return model, scaler, label_encoders, acc
