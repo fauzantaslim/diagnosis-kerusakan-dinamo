@@ -17,9 +17,7 @@ def identify():
         }), 400
 
     required_fields = [
-        "jenis_mesin", "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a",
-        "tegangan_v", "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
-        "ketidakseimbangan_arus_pct", "ketidakseimbangan_tegangan_pct", "faktor_daya"
+        "jenis_mesin", "daya", "jumlah_pole", "kecepatan_putaran_rpm"
     ]
 
     missing_fields = [field for field in required_fields if field not in data or data[field] == "" or data[field] is None]
@@ -31,9 +29,7 @@ def identify():
         }), 400
 
     numeric_fields = [
-        "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a",
-        "tegangan_v", "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
-        "ketidakseimbangan_arus_pct", "ketidakseimbangan_tegangan_pct", "faktor_daya"
+        "daya", "jumlah_pole", "kecepatan_putaran_rpm"
     ]
     invalid_numeric_fields = []
     for field in numeric_fields:
@@ -51,7 +47,7 @@ def identify():
         }), 400
 
     strictly_positive_fields = [
-        "daya_hp_kw", "jumlah_pole", "tegangan_v", "arus_a", "kecepatan_putaran_rpm"
+        "daya", "jumlah_pole", "kecepatan_putaran_rpm"
     ]
     invalid_zero_fields = []
     for field in strictly_positive_fields:

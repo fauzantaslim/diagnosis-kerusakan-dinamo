@@ -102,6 +102,41 @@ def train():
     print("\nConfusion Matrix:")
     print(confusion_matrix(y_test, y_pred))
 
+    # --- SHAP GLOBAL FEATURE IMPORTANCE ---
+    print("\n[SHAP] Menghitung Global Feature Importance...")
+    try:
+        import shap
+        import numpy as np
+        
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_test)
+        
+        if isinstance(shap_values, list):
+            mean_abs_shap = np.zeros(X_test.shape[1])
+            for sv in shap_values:
+                mean_abs_shap += np.abs(sv).mean(axis=0)
+            mean_abs_shap /= len(shap_values)
+        else:
+            if len(shap_values.shape) == 3:
+                mean_abs_shap = np.abs(shap_values).mean(axis=0).mean(axis=1)
+            else:
+                mean_abs_shap = np.abs(shap_values).mean(axis=0)
+                
+        global_shap_importances = [
+            {"feature": feat, "importance": imp}
+            for feat, imp in zip(FEATURE_COLS, mean_abs_shap)
+        ]
+        global_shap_importances.sort(key=lambda x: x["importance"], reverse=True)
+        
+        print("\n--- Global Feature Importance (SHAP) ---")
+        for i, item in enumerate(global_shap_importances[:15]):
+            print(f"  {i+1}. {item['feature']:<30} : {item['importance']:.4f}")
+            
+    except ImportError:
+        print("      Modul shap tidak ditemukan. Jalankan 'pip install shap'.")
+    except Exception as e:
+        print(f"      Gagal menghitung SHAP: {e}")
+
 
     # Simpan metrik ke file Excel (.xlsx)
     try:

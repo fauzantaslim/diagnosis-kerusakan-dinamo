@@ -139,14 +139,7 @@
                 <p id="result-error-msg" class="font-mono text-sm text-red-800 ml-7"></p>
             </div>
 
-            <!-- Probability Distribution -->
-            <div id="result-proba-section" class="border border-slate-200 bg-slate-100/50 p-6">
-                <h4 class="font-mono text-xs text-slate-500 tracking-widest uppercase mb-4">Distribusi Probabilitas</h4>
-                <div id="result-proba-list" class="space-y-2">
-                    <!-- injected by JS -->
-                </div>
-            </div>
-            
+
             <!-- Feature Importance -->
             <div id="result-fi-section" class="hidden border border-slate-200 bg-slate-100/50 p-6">
                 <h4 class="font-mono text-xs text-slate-500 tracking-widest uppercase mb-4" title="Dihitung menggunakan metode SHAP untuk penjelasan lokal spesifik pada input">Karakteristik Penentu (SHAP)</h4>
@@ -237,7 +230,6 @@ function showResult(data) {
     const card = document.getElementById('result-card');
     const errorDiv = document.getElementById('result-error');
     const errorMsg = document.getElementById('result-error-msg');
-    const probaSection = document.getElementById('result-proba-section');
 
     placeholder.classList.add('hidden');
     card.classList.remove('hidden');
@@ -245,7 +237,6 @@ function showResult(data) {
     if (!data.success) {
         errorDiv.classList.remove('hidden');
         errorMsg.textContent = data.message;
-        probaSection.classList.add('hidden');
         document.getElementById('result-fi-section').classList.add('hidden');
         document.getElementById('result-diagnosis').textContent = 'ERROR';
         document.getElementById('result-confidence-bar').style.width = '0%';
@@ -254,7 +245,6 @@ function showResult(data) {
     }
 
     errorDiv.classList.add('hidden');
-    probaSection.classList.remove('hidden');
 
     // Main result
     document.getElementById('result-diagnosis').textContent = data.diagnosis;
@@ -272,30 +262,7 @@ function showResult(data) {
         diagEl.className = 'text-2xl font-display font-bold text-blue-600 uppercase tracking-wide';
     }
 
-    // Probability bars
-    const probaList = document.getElementById('result-proba-list');
-    probaList.innerHTML = '';
-    for (const [label, prob] of Object.entries(data.probabilities)) {
-        const pct = Math.round(prob * 100);
-        const isTop = label === data.diagnosis;
-        probaList.innerHTML += `
-            <div class="flex items-center gap-2">
-                <span class="font-mono text-[10px] text-slate-800/${isTop ? '90' : '40'} tracking-wider w-36 truncate uppercase flex-shrink-0">${label}</span>
-                <div class="flex-grow bg-white h-1.5 rounded-full overflow-hidden">
-                    <div class="h-full ${isTop ? 'bg-blue-600' : 'bg-slate-400'} transition-all duration-700" style="width: ${pct}%"></div>
-                </div>
-                <span class="font-mono text-[10px] ${isTop ? 'text-blue-600' : 'text-slate-400'} w-8 text-right">${pct}%</span>
-            </div>
-        `;
-    }
-    // Animate probability bars after paint
-    setTimeout(() => {
-        probaList.querySelectorAll('div > div[style]').forEach(bar => {
-            const target = bar.style.width;
-            bar.style.width = '0%';
-            setTimeout(() => { bar.style.width = target; }, 50);
-        });
-    }, 10);
+
 
     // Feature Importance
     const fiSection = document.getElementById('result-fi-section');
