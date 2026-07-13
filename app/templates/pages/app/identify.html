@@ -35,27 +35,18 @@
                         {'value': 'Motor Induksi 1 Fasa', 'label': 'Motor Induksi 1 Fasa'},
                         {'value': 'Motor DC', 'label': 'Motor DC'}
                     ] %}
-                    <div class="md:col-span-1">
+                    <div class="md:col-span-3">
                         {{ components.select('jenis_mesin', 'Jenis Mesin', options=jenis_mesin_options) }}
                     </div>
-                    {{ components.input('daya', 'Daya (HP)', type='number', value='', step='0.5', min='0') }}
-                    {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='', step='1', min='0') }}
-                </div>
-            </div>
-
-            <!-- Pengukuran -->
-            <div class="border border-slate-200 bg-slate-100/50 p-6">
-                <h2 class="font-display text-sm font-bold uppercase tracking-widest text-blue-600 mb-5 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    Data Pengukuran
-                </h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {% set measurements = [
-                        ('kecepatan_putaran_rpm', 'Putaran (RPM)', ''),
-                    ] %}
-                    {% for field_name, label, placeholder in measurements %}
-                    {{ components.input(field_name, label, type='number', value=placeholder, step='any', min='0') }}
-                    {% endfor %}
+                    <div class="md:col-span-1">
+                        {{ components.input('daya', 'Daya (HP)', type='number', value='', step='0.5', min='0') }}
+                    </div>
+                    <div class="md:col-span-1">
+                        {{ components.input('kecepatan_putaran_rpm', 'RPM', type='number', value='', step='any', min='0') }}
+                    </div>
+                    <div class="md:col-span-1">
+                        {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='', step='1', min='0') }}
+                    </div>
                 </div>
             </div>
 
@@ -82,7 +73,7 @@
                     ('lubang_spi_aus', 'Lubang Spi (Keyway) Aus'),
                     ('resistansi_isolasi_normal', 'Resistansi Isolasi Normal'),
                 ] %}
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {% for field_name, label in symptoms %}
                     <label for="{{ field_name }}" class="flex items-center gap-3 p-3 border border-slate-200 hover:border-blue-600/30 cursor-pointer transition-colors group">
                         <div class="relative flex-shrink-0">
