@@ -138,7 +138,8 @@ def train():
             class_names=sorted(y.unique().astype(str)),
             filled=True, 
             rounded=True, 
-            special_characters=True
+            special_characters=True,
+            # max_depth=4,  
         )
         
         graph = graphviz.Source(dot_data)

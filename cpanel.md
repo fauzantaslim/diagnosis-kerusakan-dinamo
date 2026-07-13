@@ -293,6 +293,15 @@ Hal tersebut menandakan bahwa file `run.py` telah **di-override** oleh file bawa
 Solusinya adalah mengembalikan isi file `run.py` menjadi seperti semula:
 
 ```python
+import os
+
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["BLIS_NUM_THREADS"] = "1"
+
 from app import create_app
 from app.models import db
 

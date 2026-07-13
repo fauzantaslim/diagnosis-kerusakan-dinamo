@@ -38,7 +38,7 @@
                     <div class="md:col-span-1">
                         {{ components.select('jenis_mesin', 'Jenis Mesin', options=jenis_mesin_options) }}
                     </div>
-                    {{ components.input('daya_hp_kw', 'Daya (HP)', type='number', value='', step='0.5', min='0') }}
+                    {{ components.input('daya', 'Daya (HP)', type='number', value='', step='0.5', min='0') }}
                     {{ components.input('jumlah_pole', 'Jumlah Pole', type='number', value='', step='1', min='0') }}
                 </div>
             </div>
@@ -51,14 +51,7 @@
                 </h2>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {% set measurements = [
-                        ('temperatur_c', 'Temperatur (°C)', ''),
-                        ('arus_a', 'Arus (A)', ''),
-                        ('tegangan_v', 'Tegangan (V)', ''),
-                        ('resistansi_isolasi_mohm', 'R. Isolasi (MΩ)', ''),
                         ('kecepatan_putaran_rpm', 'Putaran (RPM)', ''),
-                        ('ketidakseimbangan_arus_pct', 'Ketdksbgn Arus (%)', ''),
-                        ('ketidakseimbangan_tegangan_pct', 'Ketdksbgn Tgn (%)', ''),
-                        ('faktor_daya', 'Faktor Daya', ''),
                     ] %}
                     {% for field_name, label, placeholder in measurements %}
                     {{ components.input(field_name, label, type='number', value=placeholder, step='any', min='0') }}
@@ -75,26 +68,19 @@
                 {% set symptoms = [
                     ('suara_bising_abnormal', 'Suara Bising Abnormal'),
                     ('getaran_berlebih', 'Getaran Berlebih'),
-                    ('motor_cepat_panas', 'Motor Cepat Panas'),
-                    ('arus_melebihi_normal', 'Arus Melebihi Normal'),
-                    ('tegangan_tidak_stabil', 'Tegangan Tidak Stabil'),
-                    ('putaran_menurun', 'Putaran Menurun'),
+                    ('ampere_stabil', 'Ampere Stabil'),
+                    ('tegangan_stabil', 'Tegangan Stabil'),
                     ('sulit_start', 'Sulit Start'),
-                    ('sering_trip_mcb', 'Sering Trip MCB/MCCB'),
-                    ('trip_overload_relay', 'Trip Overload Relay'),
-                    ('efisiensi_menurun', 'Efisiensi Menurun'),
                     ('bau_hangus', 'Bau Hangus'),
-                    ('intermittent_stopping', 'Intermittent Stopping'),
                     ('warna_gulungan_berubah', 'Warna Gulungan Berubah'),
                     ('kipas_pendingin_rusak', 'Kipas Pendingin Rusak'),
                     ('terminal_terbakar', 'Terminal Terbakar'),
                     ('bearing_aus_pecah', 'Bearing Aus/Pecah'),
                     ('housing_bearing_aus', 'Housing Bearing Aus'),
-                    ('poros_shaft_aus', 'Poros (Shaft) Aus'),
                     ('kebocoran_pelumas', 'Kebocoran Pelumas'),
                     ('keretakan_dudukan', 'Keretakan Dudukan'),
-                    ('sumbatan_sirip_pendingin', 'Sumbatan Sirip Pendingin'),
                     ('lubang_spi_aus', 'Lubang Spi (Keyway) Aus'),
+                    ('resistansi_isolasi_normal', 'Resistansi Isolasi Normal'),
                 ] %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     {% for field_name, label in symptoms %}
@@ -183,20 +169,15 @@
 
 <script>
 const SYMPTOM_FIELDS = [
-    'suara_bising_abnormal','getaran_berlebih','motor_cepat_panas',
-    'arus_melebihi_normal','tegangan_tidak_stabil','putaran_menurun',
-    'sulit_start','sering_trip_mcb','trip_overload_relay',
-    'efisiensi_menurun','bau_hangus','intermittent_stopping',
+    'suara_bising_abnormal','getaran_berlebih','ampere_stabil',
+    'tegangan_stabil','sulit_start','bau_hangus',
     'warna_gulungan_berubah','kipas_pendingin_rusak','terminal_terbakar',
-    'bearing_aus_pecah','housing_bearing_aus','poros_shaft_aus',
-    'kebocoran_pelumas','keretakan_dudukan','sumbatan_sirip_pendingin',
-    'lubang_spi_aus',
+    'bearing_aus_pecah','housing_bearing_aus','kebocoran_pelumas',
+    'keretakan_dudukan','lubang_spi_aus','resistansi_isolasi_normal',
 ];
 
 const NUMERIC_FIELDS = [
-    'daya_hp_kw','jumlah_pole','temperatur_c','arus_a','tegangan_v',
-    'resistansi_isolasi_mohm','kecepatan_putaran_rpm',
-    'ketidakseimbangan_arus_pct','ketidakseimbangan_tegangan_pct','faktor_daya',
+    'daya','jumlah_pole','kecepatan_putaran_rpm',
 ];
 
 document.getElementById('identify-form').addEventListener('submit', async function(e) {

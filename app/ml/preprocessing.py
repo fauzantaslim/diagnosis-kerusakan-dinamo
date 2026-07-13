@@ -10,59 +10,39 @@ from sklearn.preprocessing import LabelEncoder
 # Mapping nama kolom Excel -> nama atribut Python/model
 COLUMN_RENAME_MAP = {
     "Jenis Mesin": "jenis_mesin",
-    "Daya (HP/kW)": "daya_hp_kw",
+    "Daya (HP/kW)": "daya",
     "Jumlah Pole": "jumlah_pole",
-    "Suara bising abnormal": "suara_bising_abnormal",
-    "Getaran berlebih": "getaran_berlebih",
-    "Motor cepat panas": "motor_cepat_panas",
-    "Arus melebihi normal": "arus_melebihi_normal",
-    "Tegangan tidak stabil": "tegangan_tidak_stabil",
-    "Putaran menurun": "putaran_menurun",
-    "Sulit start": "sulit_start",
-    "Sering trip MCB/MCCB": "sering_trip_mcb",
-    "Trip Overload Relay": "trip_overload_relay",
-    "Efisiensi Menurun": "efisiensi_menurun",
-    "Bau hangus": "bau_hangus",
-    "Intermittent Stopping": "intermittent_stopping",
-    "Warna gulungan berubah": "warna_gulungan_berubah",
-    "Kipas pendingin rusak": "kipas_pendingin_rusak",
-    "Terminal terbakar": "terminal_terbakar",
-    "Bearing aus/pecah": "bearing_aus_pecah",
-    "Housing bearing aus": "housing_bearing_aus",
-    "Poros (shaft) aus": "poros_shaft_aus",
+    "Kecepatan Putaran (RPM)": "kecepatan_putaran_rpm",
+    "Suara Bising Abnormal": "suara_bising_abnormal",
+    "Getaran Berlebih": "getaran_berlebih",
+    "Ampere Stabil": "ampere_stabil",
+    "Tegangan Stabil": "tegangan_stabil",
+    "Sulit Start": "sulit_start",
+    "Bau Hangus": "bau_hangus",
+    "Warna Gulungan Berubah": "warna_gulungan_berubah",
+    "Kipas Pendingin Rusak": "kipas_pendingin_rusak",
+    "Terminal Terbakar": "terminal_terbakar",
+    "Bearing Aus/Pecah": "bearing_aus_pecah",
+    "Housing Bearing Aus": "housing_bearing_aus",
     "Kebocoran Pelumas": "kebocoran_pelumas",
     "Keretakan Dudukan": "keretakan_dudukan",
-    "Sumbatan Sirip Pendingin": "sumbatan_sirip_pendingin",
-    "Lubang spi (keyway) aus": "lubang_spi_aus",
-    "Temperatur (\u00b0C)": "temperatur_c",
-    "Arus (A)": "arus_a",
-    "Tegangan (V)": "tegangan_v",
-    "Resistansi isolasi (M\u03a9)": "resistansi_isolasi_mohm",
-    "Kecepatan Putaran (RPM)": "kecepatan_putaran_rpm",
-    "Ketidakseimbangan Arus (%)": "ketidakseimbangan_arus_pct",
-    "Ketidakseimbangan Tegangan (%)": "ketidakseimbangan_tegangan_pct",
-    "Faktor Daya": "faktor_daya",
+    "Lubang Spi (Keyway) Aus": "lubang_spi_aus",
+    "Resistansi Isolasi Normal": "resistansi_isolasi_normal",
     "Label": "label",
 }
 
 # Kolom gejala (nilai: "Ya"/"Tidak" -> 1/0)
 SYMPTOM_COLS = [
-    "suara_bising_abnormal", "getaran_berlebih", "motor_cepat_panas",
-    "arus_melebihi_normal", "tegangan_tidak_stabil", "putaran_menurun",
-    "sulit_start", "sering_trip_mcb", "trip_overload_relay",
-    "efisiensi_menurun", "bau_hangus", "intermittent_stopping",
+    "suara_bising_abnormal", "getaran_berlebih", "ampere_stabil",
+    "tegangan_stabil", "sulit_start", "bau_hangus",
     "warna_gulungan_berubah", "kipas_pendingin_rusak", "terminal_terbakar",
-    "bearing_aus_pecah", "housing_bearing_aus", "poros_shaft_aus",
-    "kebocoran_pelumas", "keretakan_dudukan", "sumbatan_sirip_pendingin",
-    "lubang_spi_aus",
+    "bearing_aus_pecah", "housing_bearing_aus", "kebocoran_pelumas",
+    "keretakan_dudukan", "lubang_spi_aus", "resistansi_isolasi_normal",
 ]
 
 # Kolom numerik (tanpa scaling — RF tidak membutuhkan)
 NUMERIC_COLS = [
-    "daya_hp_kw", "jumlah_pole", "temperatur_c", "arus_a", "tegangan_v",
-    "resistansi_isolasi_mohm", "kecepatan_putaran_rpm",
-    "ketidakseimbangan_arus_pct", "ketidakseimbangan_tegangan_pct",
-    "faktor_daya",
+    "daya", "jumlah_pole", "kecepatan_putaran_rpm",
 ]
 
 # Kolom kategorikal (Jenis Mesin -> LabelEncoder)
@@ -81,9 +61,9 @@ def load_dataset(dataset_path: str) -> pd.DataFrame:
     df.columns = [c.strip() for c in df.columns]
 
     # Bersihkan kolom daya: "7.5 HP" -> 7.5
-    if "daya_hp_kw" in df.columns:
-        df["daya_hp_kw"] = (
-            df["daya_hp_kw"]
+    if "daya" in df.columns:
+        df["daya"] = (
+            df["daya"]
             .astype(str)
             .str.extract(r"([\d.]+)", expand=False)
             .astype(float)
