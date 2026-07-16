@@ -274,7 +274,7 @@ async function showDetail(id) {
                 <h4 class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-3">Spesifikasi Mesin</h4>
                 <div class="grid grid-cols-3 gap-3">
                     ${detailItem('Jenis Mesin', d.jenis_mesin)}
-                    ${detailItem('Daya', d.daya_hp_kw ? d.daya_hp_kw + ' HP' : '—')}
+                    ${detailItem('Daya', d.daya ? d.daya + ' HP' : '—')}
                     ${detailItem('Jumlah Pole', d.jumlah_pole)}
                 </div>
             </div>
@@ -283,14 +283,7 @@ async function showDetail(id) {
             <div>
                 <h4 class="font-mono text-[10px] text-slate-500 tracking-widest uppercase mb-3">Data Pengukuran</h4>
                 <div class="grid grid-cols-2 gap-3">
-                    ${detailItem('Temperatur', d.temperatur_c ? d.temperatur_c + ' °C' : '—')}
-                    ${detailItem('Arus', d.arus_a ? d.arus_a + ' A' : '—')}
-                    ${detailItem('Tegangan', d.tegangan_v ? d.tegangan_v + ' V' : '—')}
-                    ${detailItem('R. Isolasi', d.resistansi_isolasi_mohm ? d.resistansi_isolasi_mohm + ' MΩ' : '—')}
                     ${detailItem('Putaran', d.kecepatan_putaran_rpm ? d.kecepatan_putaran_rpm + ' RPM' : '—')}
-                    ${detailItem('Faktor Daya', d.faktor_daya)}
-                    ${detailItem('Ktdk Arus', d.ketidakseimbangan_arus_pct ? d.ketidakseimbangan_arus_pct + '%' : '—')}
-                    ${detailItem('Ktdk Tgn', d.ketidakseimbangan_tegangan_pct ? d.ketidakseimbangan_tegangan_pct + '%' : '—')}
                 </div>
             </div>
 

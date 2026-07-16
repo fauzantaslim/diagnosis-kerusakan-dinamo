@@ -77,7 +77,7 @@ def train():
     # 5. Training model
     print("\n[5/5] Melatih model Random Forest...")
     model = RandomForestClassifier(
-        n_estimators=200,
+        n_estimators=100,
         max_depth=10,
         min_samples_split=5,
         min_samples_leaf=2,
