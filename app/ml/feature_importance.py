@@ -1,7 +1,9 @@
 """
 Modul untuk membaca feature importance dari model Random Forest yang sudah di-train.
-Digunakan untuk menampilkan grafik/tabel pada dashboard.
-Sekarang menggunakan SHAP untuk menghasilkan penjelasan lokal spesifik pada input.
+Dimodifikasi untuk mendukung:
+  - Global SHAP (mean |SHAP|)
+  - Local SHAP (per prediksi)
+  - SHAP Summary Plot (beeswarm)
 """
 
 import os
@@ -18,6 +20,13 @@ if BASE_DIR not in sys.path:
 
 from app.ml.preprocessing import FEATURE_COLS
 
+# =========================================================
+# INPUT (baris 23-27)
+# Path sumber model terlatih dan cache objek di memori:
+#   - MODEL_PATH  : file rf_model.pkl (model Random Forest)
+#   - _model      : cache model setelah dimuat dari disk
+#   - _explainer  : cache SHAP TreeExplainer
+# =========================================================
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
 MODEL_PATH = os.path.join(MODEL_DIR, "rf_model.pkl")
 
@@ -35,19 +44,17 @@ def _load_artifacts():
     return True
 
 
+# =========================================================
+# PROSES (baris 45-141)
+# Fungsi-fungsi perhitungan SHAP:
+#   - get_local_shap_importances() : SHAP lokal untuk 1 input prediksi
+#                                    → normalisasi ke persentase, top-N fitur
+#   - compute_global_shap()        : SHAP global dari seluruh test set
+#                                    → mean |SHAP| antar kelas, cetak ranking
+# =========================================================
+
 def get_local_shap_importances(df_input: pd.DataFrame, predicted_label: str, top_n: int = 5) -> list:
-    """
-    Menghitung feature importance lokal menggunakan SHAP untuk satu baris input.
 
-    Args:
-        df_input: DataFrame Pandas (1 baris) yang sudah melalui tahap preprocessing 
-                  (encoding, scaling) dan siap diprediksi.
-        predicted_label: Label string (nama kelas) yang merupakan hasil prediksi model.
-        top_n: Jumlah fitur teratas yang ingin ditampilkan.
-
-    Returns:
-        List of dict: [{"feature": str, "importance": float}, ...]
-    """
     if not _load_artifacts():
         return []
         
@@ -90,21 +97,7 @@ def get_local_shap_importances(df_input: pd.DataFrame, predicted_label: str, top
 
 
 def compute_global_shap(model, X_test, feature_cols: list):
-    """
-    Menghitung Global Feature Importance menggunakan SHAP (mean |SHAP value|).
 
-    Digunakan saat training untuk melihat fitur mana yang paling berpengaruh
-    secara keseluruhan terhadap prediksi model.
-
-    Args:
-        model: Model RandomForest yang sudah di-train.
-        X_test: DataFrame fitur test set.
-        feature_cols: List nama fitur sesuai urutan kolom.
-
-    Returns:
-        List of dict: [{"feature": str, "importance": float}, ...] diurutkan
-        dari yang paling penting, atau list kosong jika gagal.
-    """
     print("\n[SHAP] Menghitung Global Feature Importance...")
     try:
         explainer = shap.TreeExplainer(model)
@@ -136,3 +129,63 @@ def compute_global_shap(model, X_test, feature_cols: list):
     except Exception as e:
         print(f"      Gagal menghitung SHAP: {e}")
         return []
+
+
+# =========================================================
+# OUTPUT (baris 151-211)
+# Fungsi yang menghasilkan visualisasi SHAP sebagai file PNG:
+#   - plot_shap_summary() : render beeswarm plot dari SHAP values
+#                           → disimpan ke shap_summary_plot.png
+# =========================================================
+
+def plot_shap_summary(model, X_test: pd.DataFrame, feature_cols: list, output_dir: str):
+
+    print("\n[SHAP] Membuat SHAP Summary Plot (beeswarm)...")
+    try:
+        import matplotlib
+        matplotlib.use("Agg")  # Backend non-interaktif, aman di server
+        import matplotlib.pyplot as plt
+
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_test)
+
+        # Untuk multiclass, shap_values adalah list (1 array per kelas).
+        # Gabungkan dengan rata-rata absolut agar ringkasan bersifat global.
+        if isinstance(shap_values, list):
+            # Stack: shape (n_classes, n_samples, n_features) → rata-rata |SHAP| per kelas
+            combined_shap = np.mean(
+                [np.abs(sv) for sv in shap_values], axis=0
+            )
+        elif len(shap_values.shape) == 3:
+            # shape: (n_samples, n_features, n_classes)
+            combined_shap = np.abs(shap_values).mean(axis=2)
+        else:
+            combined_shap = shap_values
+
+        # --- Beeswarm / dot summary plot ---
+        fig, ax = plt.subplots(figsize=(10, 7))
+        shap.summary_plot(
+            combined_shap,
+            X_test,
+            feature_names=feature_cols,
+            plot_type="dot",   # beeswarm
+            show=False,
+            max_display=15,
+        )
+        plt.title("SHAP Summary Plot - Random Forest Diagnosis Kerusakan Dinamo",
+                  fontsize=13, pad=12)
+        plt.tight_layout()
+
+        out_path = os.path.join(output_dir, "shap_summary_plot.png")
+        plt.savefig(out_path, dpi=300, bbox_inches="tight")
+        plt.close()
+        print(f"      SHAP Summary Plot disimpan ke: {out_path}")
+        return out_path
+
+    except ImportError as e:
+        print(f"      Dependensi tidak ditemukan: {e}")
+        print("      Pastikan matplotlib terinstal: pip install matplotlib")
+        return None
+    except Exception as e:
+        print(f"      Gagal membuat SHAP Summary Plot: {e}")
+        return None

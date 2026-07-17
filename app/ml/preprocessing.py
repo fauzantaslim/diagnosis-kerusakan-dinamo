@@ -7,6 +7,17 @@ Catatan: StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+# =========================================================
+# INPUT (baris 11-54)
+# Definisi struktur data sebagai konstanta modul:
+#   - COLUMN_RENAME_MAP : mapping nama kolom Excel → Python
+#   - SYMPTOM_COLS      : 15 kolom gejala (Ya/Tidak)
+#   - NUMERIC_COLS      : 3 kolom numerik (tanpa scaling)
+#   - CATEGORICAL_COLS  : 1 kolom kategorikal (jenis_mesin)
+#   - FEATURE_COLS      : urutan fitur tetap (gabungan semua)
+#   - TARGET_COL        : kolom label/kelas target
+# =========================================================
+
 # Mapping nama kolom Excel -> nama atribut Python/model
 COLUMN_RENAME_MAP = {
     "Jenis Mesin": "jenis_mesin",
@@ -53,6 +64,15 @@ FEATURE_COLS = CATEGORICAL_COLS + NUMERIC_COLS + SYMPTOM_COLS
 
 TARGET_COL = "label"
 
+
+# =========================================================
+# PROSES (baris 70-145)
+# Fungsi-fungsi transformasi data:
+#   - load_dataset()       : baca Excel, bersihkan & rename kolom
+#   - encode_symptoms()    : konversi Ya/Tidak → 1/0
+#   - fit_preprocessors()  : fit LabelEncoder pada data latih
+#   - transform_features() : terapkan encoding ke seluruh dataset
+# =========================================================
 
 def load_dataset(dataset_path: str) -> pd.DataFrame:
     """Membaca dataset Excel dan melakukan rename kolom."""
@@ -115,6 +135,13 @@ def transform_features(df: pd.DataFrame, label_encoders: dict) -> pd.DataFrame:
 
     return df
 
+
+# =========================================================
+# OUTPUT (baris 130-148)
+# Fungsi yang menghasilkan data siap prediksi dari input user:
+#   - preprocess_input() : menerima dict dari form, mengembalikan
+#                          DataFrame 1 baris siap masuk model RF
+# =========================================================
 
 def preprocess_input(input_dict: dict, label_encoders: dict) -> pd.DataFrame:
     """
