@@ -31,10 +31,16 @@ def plot_tree(model, feature_cols, class_names, output_dir: str):
             out_file=None,
             feature_names=feature_cols,
             class_names=class_names,
-            filled=True,
+            filled=False,       # Nonaktifkan warna pengisi node
             rounded=True,
             special_characters=True,
+            max_depth=3,
         )
+
+        # Hapus atribut warna sisa dari DOT string agar benar-benar hitam putih
+        import re
+        dot_data = re.sub(r'fillcolor="[^"]*",?\s*', '', dot_data)
+        dot_data = re.sub(r'color="[^"]*",?\s*', '', dot_data)
 
         graph = graphviz.Source(dot_data)
         viz_path = os.path.join(output_dir, "rf_tree_viz")
