@@ -87,3 +87,52 @@ def get_local_shap_importances(df_input: pd.DataFrame, predicted_label: str, top
     except Exception as e:
         print(f"Error computing SHAP importance: {e}")
         return []
+
+
+def compute_global_shap(model, X_test, feature_cols: list):
+    """
+    Menghitung Global Feature Importance menggunakan SHAP (mean |SHAP value|).
+
+    Digunakan saat training untuk melihat fitur mana yang paling berpengaruh
+    secara keseluruhan terhadap prediksi model.
+
+    Args:
+        model: Model RandomForest yang sudah di-train.
+        X_test: DataFrame fitur test set.
+        feature_cols: List nama fitur sesuai urutan kolom.
+
+    Returns:
+        List of dict: [{"feature": str, "importance": float}, ...] diurutkan
+        dari yang paling penting, atau list kosong jika gagal.
+    """
+    print("\n[SHAP] Menghitung Global Feature Importance...")
+    try:
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_test)
+
+        if isinstance(shap_values, list):
+            mean_abs_shap = np.zeros(X_test.shape[1])
+            for sv in shap_values:
+                mean_abs_shap += np.abs(sv).mean(axis=0)
+            mean_abs_shap /= len(shap_values)
+        else:
+            if len(shap_values.shape) == 3:
+                mean_abs_shap = np.abs(shap_values).mean(axis=0).mean(axis=1)
+            else:
+                mean_abs_shap = np.abs(shap_values).mean(axis=0)
+
+        global_importances = [
+            {"feature": feat, "importance": imp}
+            for feat, imp in zip(feature_cols, mean_abs_shap)
+        ]
+        global_importances.sort(key=lambda x: x["importance"], reverse=True)
+
+        print("\n--- Global Feature Importance (SHAP) ---")
+        for i, item in enumerate(global_importances[:15]):
+            print(f"  {i+1}. {item['feature']:<30} : {item['importance']:.4f}")
+
+        return global_importances
+
+    except Exception as e:
+        print(f"      Gagal menghitung SHAP: {e}")
+        return []

@@ -10,13 +10,11 @@ Penggunaan:
 import os
 import sys
 import joblib
-import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from imblearn.over_sampling import SMOTE
 
-# Tambahkan root project ke path agar bisa import preprocessing
+# Tambahkan root project ke path agar bisa import modul lokal
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -28,6 +26,9 @@ from app.ml.preprocessing import (
     FEATURE_COLS,
     TARGET_COL,
 )
+from app.ml.evaluate import evaluate_model, export_metrics_to_excel
+from app.ml.feature_importance import compute_global_shap
+from app.ml.visualize import plot_tree, plot_confusion_matrix
 
 # --- Paths ---
 DATASET_PATH = os.path.join(BASE_DIR, "dataset", "dataset_dummy.xlsx")
@@ -61,14 +62,13 @@ def train():
     X = transform_features(X_raw.copy(), label_encoders)
     print("      Preprocessing selesai (tanpa scaling).")
 
-    # 4. Train / Test split
+    # 4. Train / Test split + SMOTE
     print("\n[4/5] Membagi data training dan testing (80:20)...")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
     print(f"      Training sebelum SMOTE: {len(X_train)} | Testing: {len(X_test)}")
 
-    # 4.5. SMOTE
     print("      Menerapkan SMOTE pada data training...")
     smote = SMOTE(random_state=42)
     X_train, y_train = smote.fit_resample(X_train, y_train)
@@ -77,7 +77,7 @@ def train():
     # 5. Training model
     print("\n[5/5] Melatih model Random Forest...")
     model = RandomForestClassifier(
-        n_estimators=100,
+        n_estimators=50,
         max_depth=10,
         min_samples_split=5,
         min_samples_leaf=2,
@@ -88,140 +88,25 @@ def train():
     )
     model.fit(X_train, y_train)
 
-    # Evaluasi
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    print(f"\n{'='*60}")
-    print(f"  OOB SCORE       : {model.oob_score_ * 100:.2f}%")
-    print(f"  AKURASI TEST SET: {acc * 100:.2f}%")
-    print(f"{'='*60}")
-    print("\nClassification Report:")
-    report_str = classification_report(y_test, y_pred)
-    print(report_str)
+    # --- Evaluasi ---
+    y_pred, acc = evaluate_model(model, X_test, y_test)
+    export_metrics_to_excel(y_test, y_pred, MODEL_DIR)
 
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
+    # --- SHAP Global Feature Importance ---
+    compute_global_shap(model, X_test, FEATURE_COLS)
 
-    # --- SHAP GLOBAL FEATURE IMPORTANCE ---
-    print("\n[SHAP] Menghitung Global Feature Importance...")
-    try:
-        import shap
-        import numpy as np
-        
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(X_test)
-        
-        if isinstance(shap_values, list):
-            mean_abs_shap = np.zeros(X_test.shape[1])
-            for sv in shap_values:
-                mean_abs_shap += np.abs(sv).mean(axis=0)
-            mean_abs_shap /= len(shap_values)
-        else:
-            if len(shap_values.shape) == 3:
-                mean_abs_shap = np.abs(shap_values).mean(axis=0).mean(axis=1)
-            else:
-                mean_abs_shap = np.abs(shap_values).mean(axis=0)
-                
-        global_shap_importances = [
-            {"feature": feat, "importance": imp}
-            for feat, imp in zip(FEATURE_COLS, mean_abs_shap)
-        ]
-        global_shap_importances.sort(key=lambda x: x["importance"], reverse=True)
-        
-        print("\n--- Global Feature Importance (SHAP) ---")
-        for i, item in enumerate(global_shap_importances[:15]):
-            print(f"  {i+1}. {item['feature']:<30} : {item['importance']:.4f}")
-            
-    except ImportError:
-        print("      Modul shap tidak ditemukan. Jalankan 'pip install shap'.")
-    except Exception as e:
-        print(f"      Gagal menghitung SHAP: {e}")
-
-
-    # Simpan metrik ke file Excel (.xlsx)
-    try:
-        report_dict = classification_report(y_test, y_pred, output_dict=True)
-        df_metrics = pd.DataFrame(report_dict).transpose()
-        df_metrics = df_metrics.round(4) # Rapikan angka desimal
-        excel_path = os.path.join(MODEL_DIR, "evaluation_metrics.xlsx")
-        df_metrics.to_excel(excel_path, sheet_name="Metrics")
-        print(f"      Metrik evaluasi berhasil diekspor ke: {excel_path}")
-    except Exception as e:
-        print(f"      Gagal mengekspor metrik ke Excel: {e}")
-
-    # Simpan model & preprocessors
+    # --- Simpan model & preprocessors ---
     joblib.dump(model, MODEL_PATH)
     joblib.dump(label_encoders, ENCODERS_PATH)
-
     print(f"\nModel disimpan ke  : {MODEL_PATH}")
     print(f"Encoders disimpan  : {ENCODERS_PATH}")
 
-    # Visualisasi dengan Graphviz
-    print("\n[6/5] Membuat visualisasi salah satu tree (Decision Tree)...")
-    try:
-        from sklearn.tree import export_graphviz
-        import graphviz
-        
-        # Ekstrak tree pertama (indeks 0) dari Random Forest
-        estimator = model.estimators_[0]
-        
-        # Ekspor menjadi string format dot
-        dot_data = export_graphviz(
-            estimator, 
-            out_file=None, 
-            feature_names=FEATURE_COLS,
-            class_names=sorted(y.unique().astype(str)),
-            filled=True, 
-            rounded=True, 
-            special_characters=True,
-            # max_depth=4,  
-        )
-        
-        graph = graphviz.Source(dot_data)
-        
-        # Render ke bentuk gambar PNG
-        viz_path = os.path.join(MODEL_DIR, "rf_tree_viz")
-        graph.render(viz_path, format="png", cleanup=True)
-        print(f"      Visualisasi tree berhasil disimpan ke: {viz_path}.png")
-    except ImportError:
-        print("      Modul graphviz tidak ditemukan. Lewati visualisasi.")
-        print("      Jalankan 'pip install graphviz' untuk mengaktifkannya.")
-    except Exception as e:
-        print(f"      Gagal membuat visualisasi graphviz: {e}")
-        print("      Pastikan aplikasi Graphviz sudah diinstal di sistem (Windows/Linux) dan ditambahkan ke PATH.")
-
-    # Visualisasi Confusion Matrix
-    print("\n[7/5] Membuat visualisasi Confusion Matrix...")
-    try:
-        import matplotlib
-        matplotlib.use('Agg') # Gunakan backend non-interaktif
-        import matplotlib.pyplot as plt
-        from sklearn.metrics import ConfusionMatrixDisplay
-        
-        cm = confusion_matrix(y_test, y_pred)
-        labels = sorted(y.unique().astype(str))
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
-        
-        # Plot dengan ukuran figure yang cukup besar
-        fig, ax = plt.subplots(figsize=(10, 8))
-        disp.plot(cmap='Blues', ax=ax, xticks_rotation=45)
-        
-        plt.title('Confusion Matrix - Random Forest')
-        plt.tight_layout()
-        
-        cm_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
-        plt.savefig(cm_path, dpi=300)
-        plt.close()
-        
-        print(f"      Visualisasi Confusion Matrix berhasil disimpan ke: {cm_path}")
-    except ImportError:
-        print("      Modul matplotlib tidak ditemukan. Lewati visualisasi confusion matrix.")
-        print("      Jalankan 'pip install matplotlib' untuk mengaktifkannya.")
-    except Exception as e:
-        print(f"      Gagal membuat visualisasi confusion matrix: {e}")
+    # --- Visualisasi ---
+    class_names = sorted(y.unique().astype(str))
+    plot_tree(model, FEATURE_COLS, class_names, MODEL_DIR)
+    plot_confusion_matrix(y_test, y_pred, class_names, MODEL_DIR)
 
     print("\nTraining selesai!")
-
     return model, label_encoders, acc
 
 
