@@ -8,51 +8,39 @@ class History(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     tanggal = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Spesifikasi Mesin
-    jenis_mesin = db.Column(db.String(100), nullable=True)
+    # Spesifikasi
     daya = db.Column(db.Float, nullable=True)
     jumlah_pole = db.Column(db.Integer, nullable=True)
-    
+    kecepatan_putaran_rpm = db.Column(db.Float, nullable=True)
     # Gejala (Symptoms)
     suara_bising_abnormal = db.Column(db.Boolean, nullable=True)
-    getaran_berlebih = db.Column(db.Boolean, nullable=True)
-    ampere_stabil = db.Column(db.Boolean, nullable=True)
-    tegangan_stabil = db.Column(db.Boolean, nullable=True)
-    sulit_start = db.Column(db.Boolean, nullable=True)
     bau_hangus = db.Column(db.Boolean, nullable=True)
-    warna_gulungan_berubah = db.Column(db.Boolean, nullable=True)
+    indikasi_overheating = db.Column(db.Boolean, nullable=True)
+    putaran_poros_seret = db.Column(db.Boolean, nullable=True)
+    getaran_berlebih = db.Column(db.Boolean, nullable=True)
+    terminal_overheating = db.Column(db.Boolean, nullable=True)
     kipas_pendingin_rusak = db.Column(db.Boolean, nullable=True)
-    terminal_terbakar = db.Column(db.Boolean, nullable=True)
-    bearing_aus_pecah = db.Column(db.Boolean, nullable=True)
-    housing_bearing_aus = db.Column(db.Boolean, nullable=True)
-    kebocoran_pelumas = db.Column(db.Boolean, nullable=True)
-    keretakan_dudukan = db.Column(db.Boolean, nullable=True)
-    lubang_spi_aus = db.Column(db.Boolean, nullable=True)
-    resistansi_isolasi_normal = db.Column(db.Boolean, nullable=True)
-    
-    # Pengukuran
-    kecepatan_putaran_rpm = db.Column(db.Float, nullable=True)
+    cooling_duct_tersumbat = db.Column(db.Boolean, nullable=True)
+    resistansi_isolasi_tidak_seimbang = db.Column(db.Boolean, nullable=True)
+    resistansi_winding_tidak_seimbang = db.Column(db.Boolean, nullable=True)
+    arus_antar_fasa_tidak_seimbang = db.Column(db.Boolean, nullable=True)
     
     # Hasil Prediksi (Label)
     diagnosis = db.Column(db.String(100), nullable=False)
     confidence = db.Column(db.Float, nullable=False)
 
     SYMPTOM_LABEL_MAP = {
-        "suara_bising_abnormal"   : "Suara Bising Abnormal",
-        "getaran_berlebih"        : "Getaran Berlebih",
-        "ampere_stabil"           : "Ampere Stabil",
-        "tegangan_stabil"         : "Tegangan Stabil",
-        "sulit_start"             : "Sulit Start",
-        "bau_hangus"              : "Bau Hangus",
-        "warna_gulungan_berubah"  : "Warna Gulungan Berubah",
-        "kipas_pendingin_rusak"   : "Kipas Pendingin Rusak",
-        "terminal_terbakar"       : "Terminal Terbakar",
-        "bearing_aus_pecah"       : "Bearing Aus/Pecah",
-        "housing_bearing_aus"     : "Housing Bearing Aus",
-        "kebocoran_pelumas"       : "Kebocoran Pelumas",
-        "keretakan_dudukan"       : "Keretakan Dudukan",
-        "lubang_spi_aus"          : "Lubang Spi (Keyway) Aus",
-        "resistansi_isolasi_normal": "Resistansi Isolasi Normal",
+        "suara_bising_abnormal": "Suara Bising Abnormal",
+        "bau_hangus": "Bau Hangus",
+        "indikasi_overheating": "Indikasi Overheating",
+        "putaran_poros_seret": "Putaran Poros Seret",
+        "getaran_berlebih": "Getaran Berlebih",
+        "terminal_overheating": "Terminal Overheating",
+        "kipas_pendingin_rusak": "Kipas Pendingin Rusak",
+        "cooling_duct_tersumbat": "Cooling Duct Tersumbat",
+        "resistansi_isolasi_tidak_seimbang": "Resistansi Isolasi Tidak Seimbang",
+        "resistansi_winding_tidak_seimbang": "Resistansi Winding Tidak Seimbang",
+        "arus_antar_fasa_tidak_seimbang": "Arus Antar Fasa Tidak Seimbang",
     }
 
     def active_symptoms(self) -> list:
@@ -70,14 +58,12 @@ class History(db.Model):
             "user_id"     : self.user_id,
             "tanggal"     : self.tanggal.strftime("%d %b %Y %H:%M") if self.tanggal else None,
             "tanggal_iso" : self.tanggal.isoformat() if self.tanggal else None,
-            # Spesifikasi
-            "jenis_mesin" : self.jenis_mesin,
-            "daya"  : self.daya,
-            "jumlah_pole" : self.jumlah_pole,
-            # Pengukuran
-            "kecepatan_putaran_rpm"          : self.kecepatan_putaran_rpm,
             # Gejala aktif
             "gejala_aktif": self.active_symptoms(),
+            # Spesifikasi
+            "daya"          : self.daya,
+            "jumlah_pole"   : self.jumlah_pole,
+            "kecepatan_putaran_rpm": self.kecepatan_putaran_rpm,
             # Hasil
             "diagnosis"     : self.diagnosis,
             "confidence"    : round(self.confidence, 4),

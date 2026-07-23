@@ -15,6 +15,24 @@ def predict_diagnosis(user_id, data):
             "message": "Validasi gagal: Mohon pilih minimal satu gejala yang teridentifikasi."
         }
 
+    # Validasi jumlah pole: minimal 2 dan harus genap
+    jumlah_pole = data.get("jumlah_pole", 0)
+    try:
+        jumlah_pole = int(jumlah_pole)
+    except (ValueError, TypeError):
+        jumlah_pole = 0
+
+    if jumlah_pole < 2:
+        return {
+            "success": False,
+            "message": "Validasi gagal: Jumlah Pole harus minimal 2."
+        }
+    if jumlah_pole % 2 != 0:
+        return {
+            "success": False,
+            "message": "Validasi gagal: Jumlah Pole harus berupa angka genap (2, 4, 6, 8, ...)."
+        }
+
     # Prediksi menggunakan ML
     result = ml_predict.predict(data)
     

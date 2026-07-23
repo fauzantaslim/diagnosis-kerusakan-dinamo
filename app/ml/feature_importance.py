@@ -4,6 +4,7 @@ Dimodifikasi untuk mendukung:
   - Global SHAP (mean |SHAP|)
   - Local SHAP (per prediksi)
   - SHAP Summary Plot (beeswarm)
+  - Local SHAP Waterfall Plot (per prediksi → PNG)
 """
 
 import os
@@ -53,15 +54,38 @@ def _load_artifacts():
 #                                    → mean |SHAP| antar kelas, cetak ranking
 # =========================================================
 
-def get_local_shap_importances(df_input: pd.DataFrame, predicted_label: str, top_n: int = 5) -> list:
+def get_local_shap_importances(
+    df_input: pd.DataFrame,
+    predicted_label: str,
+    top_n: int = 5,
+    model=None,
+    explainer=None,
+) -> list:
+    """
+    Hitung SHAP lokal untuk satu prediksi.
 
-    if not _load_artifacts():
-        return []
-        
+    Args:
+        df_input: DataFrame 1 baris (hasil preprocess_input).
+        predicted_label: Label kelas yang diprediksi.
+        top_n: Jumlah fitur teratas yang dikembalikan.
+        model: (Opsional) Model RF yang sudah di-cache; jika None akan di-load dari disk.
+        explainer: (Opsional) TreeExplainer yang sudah di-cache; jika None akan dibuat baru.
+    """
+    # Gunakan model/explainer dari cache eksternal bila tersedia;
+    # jika tidak, fallback ke _load_artifacts() internal modul.
+    if model is not None and explainer is not None:
+        _eff_model = model
+        _eff_explainer = explainer
+    else:
+        if not _load_artifacts():
+            return []
+        _eff_model = _model
+        _eff_explainer = _explainer
+
     try:
-        shap_values = _explainer.shap_values(df_input)
+        shap_values = _eff_explainer.shap_values(df_input, approximate=True, check_additivity=False)
         
-        class_idx = list(_model.classes_).index(predicted_label)
+        class_idx = list(_eff_model.classes_).index(predicted_label)
         
         if isinstance(shap_values, list):
             local_shap_values = shap_values[class_idx][0]
@@ -189,3 +213,167 @@ def plot_shap_summary(model, X_test: pd.DataFrame, feature_cols: list, output_di
     except Exception as e:
         print(f"      Gagal membuat SHAP Summary Plot: {e}")
         return None
+
+
+# =========================================================
+# LOCAL WATERFALL PLOT (baris 216+)
+# Fungsi yang menghasilkan waterfall plot SHAP lokal
+# untuk SATU prediksi sebagai file PNG:
+#   - plot_local_waterfall() : menampilkan kontribusi tiap fitur
+#                              terhadap prediksi spesifik satu sampel
+#                              → disimpan ke local_waterfall.png
+# =========================================================
+
+def plot_local_waterfall(
+    df_input: pd.DataFrame,
+    predicted_label: str,
+    output_dir: str,
+    model=None,
+    explainer=None,
+) -> str | None:
+    """
+    Membuat SHAP Waterfall Plot lokal untuk satu baris prediksi dan menyimpannya ke PNG.
+
+    Waterfall plot menunjukkan kontribusi positif/negatif setiap fitur terhadap
+    output model dibandingkan nilai baseline (expected value), sehingga bisa
+    dijelaskan *mengapa* model memberikan prediksi tersebut.
+
+    Args:
+        df_input       : DataFrame 1 baris (output preprocess_input).
+        predicted_label: Label kelas yang diprediksi model.
+        output_dir     : Direktori tujuan penyimpanan PNG.
+        model          : (Opsional) Model RF dari cache; jika None di-load dari disk.
+        explainer      : (Opsional) TreeExplainer dari cache; jika None dibuat baru.
+
+    Returns:
+        str  : Path absolut file PNG yang disimpan.
+        None : Jika terjadi error.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+
+        # --- Pilih model/explainer ---
+        if model is not None and explainer is not None:
+            _eff_model    = model
+            _eff_explainer = explainer
+        else:
+            if not _load_artifacts():
+                print("      [Waterfall] Model belum tersedia.")
+                return None
+            _eff_model    = _model
+            _eff_explainer = _explainer
+
+        # --- Hitung SHAP values ---
+        shap_values    = _eff_explainer.shap_values(df_input, approximate=True, check_additivity=False)
+        expected_value = _eff_explainer.expected_value
+        class_idx      = list(_eff_model.classes_).index(predicted_label)
+
+        if isinstance(shap_values, list):
+            local_shap = np.array(shap_values[class_idx][0], dtype=float)
+            base_val   = float(expected_value[class_idx]) if hasattr(expected_value, "__len__") else float(expected_value)
+        else:
+            if shap_values.ndim == 3:
+                local_shap = np.array(shap_values[0, :, class_idx], dtype=float)
+                base_val   = float(expected_value[class_idx]) if hasattr(expected_value, "__len__") else float(expected_value)
+            else:
+                local_shap = np.array(shap_values[0], dtype=float)
+                base_val   = float(expected_value) if not hasattr(expected_value, "__len__") else float(expected_value[0])
+
+        feature_names = list(df_input.columns)
+        feature_vals  = df_input.values[0]
+
+        # --- Coba shap.plots.waterfall (native SHAP) ---
+        try:
+            explanation = shap.Explanation(
+                values        = local_shap,
+                base_values   = base_val,
+                data          = feature_vals,
+                feature_names = feature_names,
+            )
+
+            fig, ax = plt.subplots(figsize=(10, 7))
+            shap.plots.waterfall(explanation, max_display=len(feature_names), show=False)
+            fig = plt.gcf()
+            fig.suptitle(
+                f"SHAP Waterfall Plot — {predicted_label}",
+                fontsize=13, fontweight="bold", y=1.01,
+            )
+            plt.tight_layout()
+
+        except Exception:
+            # --- Fallback: waterfall manual dengan matplotlib ---
+            plt.close("all")
+
+            # Urutkan berdasarkan nilai absolut SHAP (terkecil di atas → terbesar di bawah)
+            order      = np.argsort(np.abs(local_shap))
+            sv_sorted  = local_shap[order]
+            fn_sorted  = [feature_names[i] for i in order]
+            fv_sorted  = [feature_vals[i]  for i in order]
+
+            n       = len(sv_sorted)
+            running = base_val
+            starts  = []
+            for v in sv_sorted:
+                starts.append(running)
+                running += v
+            final_val = running
+
+            fig, ax = plt.subplots(figsize=(10, max(5, n * 0.55 + 1.5)))
+
+            BLUE = "#2563EB"
+            RED  = "#DC2626"
+            GRAY = "#94A3B8"
+
+            for i, (start, sv, fn, fv) in enumerate(zip(starts, sv_sorted, fn_sorted, fv_sorted)):
+                color  = BLUE if sv >= 0 else RED
+                bar    = ax.barh(i, sv, left=start, color=color, height=0.55,
+                                 edgecolor="white", linewidth=0.8, zorder=3)
+                label  = f"+{sv:.4f}" if sv >= 0 else f"{sv:.4f}"
+                x_pos  = start + sv + (0.001 if sv >= 0 else -0.001)
+                ha     = "left" if sv >= 0 else "right"
+                ax.text(x_pos, i, label, va="center", ha=ha,
+                        fontsize=8.5, fontweight="bold", color=color)
+
+            # Nilai fitur di label y
+            y_labels = [
+                f"{fn.replace('_', ' ').upper()}  [{'YA' if fv == 1 else 'TIDAK'}]"
+                for fn, fv in zip(fn_sorted, fv_sorted)
+            ]
+            ax.set_yticks(range(n))
+            ax.set_yticklabels(y_labels, fontsize=9)
+
+            # Garis baseline
+            ax.axvline(base_val,  color=GRAY, linestyle="--", linewidth=1, label=f"Base: {base_val:.4f}")
+            ax.axvline(final_val, color=BLUE, linestyle="-",  linewidth=1.5, label=f"Output: {final_val:.4f}")
+
+            ax.set_xlabel("SHAP Value (kontribusi terhadap prediksi)", fontsize=10)
+            ax.set_title(f"SHAP Waterfall Plot — {predicted_label}", fontsize=13, fontweight="bold", pad=12)
+            ax.legend(fontsize=9, loc="lower right")
+            ax.grid(axis="x", linestyle=":", alpha=0.5, zorder=0)
+            ax.spines[["top", "right"]].set_visible(False)
+
+            # Anotasi base & final di sumbu x
+            ax.annotate(f"E[f(x)] = {base_val:.4f}", xy=(base_val, -0.7),
+                        fontsize=8, color=GRAY, ha="center")
+            ax.annotate(f"f(x) = {final_val:.4f}", xy=(final_val, -0.7),
+                        fontsize=8, color=BLUE, ha="center")
+
+            plt.tight_layout()
+
+        # --- Simpan ---
+        os.makedirs(output_dir, exist_ok=True)
+        out_path = os.path.join(output_dir, "local_waterfall.png")
+        plt.savefig(out_path, dpi=180, bbox_inches="tight")
+        plt.close()
+        print(f"      Waterfall Plot disimpan ke: {out_path}")
+        return out_path
+
+    except Exception as e:
+        import traceback
+        print(f"      Gagal membuat Waterfall Plot: {e}")
+        traceback.print_exc()
+        return None
+

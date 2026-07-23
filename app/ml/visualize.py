@@ -34,7 +34,7 @@ def plot_tree(model, feature_cols, class_names, output_dir: str):
             filled=False,       # Nonaktifkan warna pengisi node
             rounded=True,
             special_characters=True,
-            max_depth=3,
+            # max_depth=3,
         )
 
         # Hapus atribut warna sisa dari DOT string agar benar-benar hitam putih

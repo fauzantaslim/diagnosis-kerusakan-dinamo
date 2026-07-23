@@ -37,7 +37,7 @@ from app.ml.visualize import plot_tree, plot_confusion_matrix
 #   - MODEL_PATH   : path output model terlatih (.pkl)
 #   - ENCODERS_PATH: path output preprocessor (.pkl)
 # =========================================================
-DATASET_PATH = os.path.join(BASE_DIR, "dataset", "dataset_dummy.xlsx")  # INPUT
+DATASET_PATH = os.path.join(BASE_DIR, "dataset", "dataset.xlsx")  # INPUT
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
 MODEL_PATH = os.path.join(MODEL_DIR, "rf_model.pkl")
 ENCODERS_PATH = os.path.join(MODEL_DIR, "label_encoders.pkl")
@@ -80,19 +80,43 @@ def train():
     )
     print(f"      Training: {len(X_train)} | Testing: {len(X_test)}")
 
-    # 5. Training model
-    print("\n[5/5] Melatih model Random Forest...")
-    model = RandomForestClassifier(                          # PROSES: inisialisasi RF
-        n_estimators=50,
-        max_depth=10,
-        min_samples_split=5,
-        min_samples_leaf=2,
+    from sklearn.model_selection import GridSearchCV
+
+    # 5. Training model (Hyperparameter Tuning dengan GridSearchCV)
+    print("\n[5/5] Melatih model Random Forest dengan GridSearchCV...")
+    base_model = RandomForestClassifier(
         class_weight="balanced",
         random_state=42,
         n_jobs=-1,
         oob_score=True,
     )
-    model.fit(X_train, y_train)                              # PROSES: latih model
+    
+    # Ruang pencarian hyperparameter (dikurangi agar lebih cepat)
+    param_grid = {
+        'n_estimators': [50, 100, 150],
+        'max_depth': [7, 10],
+        'min_samples_split': [2, 5],
+        'min_samples_leaf': [1, 2]
+    }
+    
+    grid_search = GridSearchCV(
+        estimator=base_model,
+        param_grid=param_grid,
+        cv=5,
+        scoring='accuracy',
+        n_jobs=1,  # Ubah ke 1 agar tidak hang di Windows
+        verbose=1
+    )
+    
+    grid_search.fit(X_train, y_train)
+    
+    print("\n      Parameter terbaik yang ditemukan:")
+    for param, value in grid_search.best_params_.items():
+        print(f"        - {param}: {value}")
+        
+    model = grid_search.best_estimator_
+    if hasattr(model, 'oob_score_'):
+        print(f"      OOB Score (Best Model): {model.oob_score_:.4f}")
 
     # =========================================================
     # OUTPUT (baris 93-112)

@@ -1,77 +1,69 @@
 """
 Preprocessing module untuk pipeline Machine Learning Diagnosis Kerusakan Dinamo.
 Bertugas membaca dataset Excel, membersihkan data, dan melakukan encoding.
-Catatan: StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
+
+Dataset: 11 kolom gejala (YA/TIDAK) + 1 kolom Label.
+Tidak ada kolom numerik maupun kategorikal tambahan.
+StandardScaler tidak digunakan karena Random Forest tidak membutuhkan scaling.
 """
 
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
 # =========================================================
-# INPUT (baris 11-54)
+# INPUT (baris 18-57)
 # Definisi struktur data sebagai konstanta modul:
 #   - COLUMN_RENAME_MAP : mapping nama kolom Excel → Python
-#   - SYMPTOM_COLS      : 15 kolom gejala (Ya/Tidak)
-#   - NUMERIC_COLS      : 3 kolom numerik (tanpa scaling)
-#   - CATEGORICAL_COLS  : 1 kolom kategorikal (jenis_mesin)
-#   - FEATURE_COLS      : urutan fitur tetap (gabungan semua)
+#   - SYMPTOM_COLS      : 11 kolom gejala (YA/TIDAK)
+#   - FEATURE_COLS      : urutan fitur tetap (semua kolom gejala)
 #   - TARGET_COL        : kolom label/kelas target
 # =========================================================
 
 # Mapping nama kolom Excel -> nama atribut Python/model
 COLUMN_RENAME_MAP = {
-    "Jenis Mesin": "jenis_mesin",
-    "Daya (HP/kW)": "daya",
-    "Jumlah Pole": "jumlah_pole",
-    "Kecepatan Putaran (RPM)": "kecepatan_putaran_rpm",
-    "Suara Bising Abnormal": "suara_bising_abnormal",
-    "Getaran Berlebih": "getaran_berlebih",
-    "Ampere Stabil": "ampere_stabil",
-    "Tegangan Stabil": "tegangan_stabil",
-    "Sulit Start": "sulit_start",
-    "Bau Hangus": "bau_hangus",
-    "Warna Gulungan Berubah": "warna_gulungan_berubah",
-    "Kipas Pendingin Rusak": "kipas_pendingin_rusak",
-    "Terminal Terbakar": "terminal_terbakar",
-    "Bearing Aus/Pecah": "bearing_aus_pecah",
-    "Housing Bearing Aus": "housing_bearing_aus",
-    "Kebocoran Pelumas": "kebocoran_pelumas",
-    "Keretakan Dudukan": "keretakan_dudukan",
-    "Lubang Spi (Keyway) Aus": "lubang_spi_aus",
-    "Resistansi Isolasi Normal": "resistansi_isolasi_normal",
-    "Label": "label",
+    "Suara Bising Abnormal":            "suara_bising_abnormal",
+    "Bau Hangus":                       "bau_hangus",
+    "Indikasi Overheating":             "indikasi_overheating",
+    "Putaran Poros Seret":              "putaran_poros_seret",
+    "Getaran Berlebih":                 "getaran_berlebih",
+    "Terminal Overheating":             "terminal_overheating",
+    "Kipas Pendingin Rusak":            "kipas_pendingin_rusak",
+    "Cooling Duct Tersumbat":           "cooling_duct_tersumbat",
+    "Resistansi Isolasi Tidak Seimbang":"resistansi_isolasi_tidak_seimbang",
+    "Resistansi Winding Tidak Seimbang":"resistansi_winding_tidak_seimbang",
+    "Arus Antar Fasa Tidak Seimbang":   "arus_antar_fasa_tidak_seimbang",
+    "Label":                            "label",
 }
 
-# Kolom gejala (nilai: "Ya"/"Tidak" -> 1/0)
+# Kolom gejala (nilai: "YA"/"TIDAK" -> 1/0)
 SYMPTOM_COLS = [
-    "suara_bising_abnormal", "getaran_berlebih", "ampere_stabil",
-    "tegangan_stabil", "sulit_start", "bau_hangus",
-    "warna_gulungan_berubah", "kipas_pendingin_rusak", "terminal_terbakar",
-    "bearing_aus_pecah", "housing_bearing_aus", "kebocoran_pelumas",
-    "keretakan_dudukan", "lubang_spi_aus", "resistansi_isolasi_normal",
+    "suara_bising_abnormal",
+    "bau_hangus",
+    "indikasi_overheating",
+    "putaran_poros_seret",
+    "getaran_berlebih",
+    "terminal_overheating",
+    "kipas_pendingin_rusak",
+    "cooling_duct_tersumbat",
+    "resistansi_isolasi_tidak_seimbang",
+    "resistansi_winding_tidak_seimbang",
+    "arus_antar_fasa_tidak_seimbang",
 ]
-
-# Kolom numerik (tanpa scaling — RF tidak membutuhkan)
-NUMERIC_COLS = [
-    "daya", "jumlah_pole", "kecepatan_putaran_rpm",
-]
-
-# Kolom kategorikal (Jenis Mesin -> LabelEncoder)
-CATEGORICAL_COLS = ["jenis_mesin"]
 
 # Semua kolom fitur dalam urutan tetap (penting untuk konsistensi prediksi)
-FEATURE_COLS = CATEGORICAL_COLS + NUMERIC_COLS + SYMPTOM_COLS
+# Dataset ini hanya memiliki kolom gejala — tidak ada numerik/kategorikal tambahan
+FEATURE_COLS = SYMPTOM_COLS
 
 TARGET_COL = "label"
 
 
 # =========================================================
-# PROSES (baris 70-145)
+# PROSES (baris 60-120)
 # Fungsi-fungsi transformasi data:
 #   - load_dataset()       : baca Excel, bersihkan & rename kolom
-#   - encode_symptoms()    : konversi Ya/Tidak → 1/0
-#   - fit_preprocessors()  : fit LabelEncoder pada data latih
-#   - transform_features() : terapkan encoding ke seluruh dataset
+#   - encode_symptoms()    : konversi YA/TIDAK → 1/0 (case-insensitive)
+#   - fit_preprocessors()  : kompatibilitas — mengembalikan dict kosong
+#                            (tidak ada LabelEncoder yang dibutuhkan)
+#   - transform_features() : terapkan encoding gejala ke seluruh dataset
 # =========================================================
 
 def load_dataset(dataset_path: str) -> pd.DataFrame:
@@ -80,64 +72,57 @@ def load_dataset(dataset_path: str) -> pd.DataFrame:
     df = df.rename(columns=COLUMN_RENAME_MAP)
     df.columns = [c.strip() for c in df.columns]
 
-    # Bersihkan kolom daya: "7.5 HP" -> 7.5
-    if "daya" in df.columns:
-        df["daya"] = (
-            df["daya"]
-            .astype(str)
-            .str.extract(r"([\d.]+)", expand=False)
-            .astype(float)
+    # Normalisasi label: hapus duplikat/typo jika ada
+    # (misal: "Kerusakan Kerusakan Terminal" -> "Kerusakan Terminal")
+    if TARGET_COL in df.columns:
+        df[TARGET_COL] = df[TARGET_COL].astype(str).str.strip()
+        df[TARGET_COL] = df[TARGET_COL].str.replace(
+            r"\bKerusakan Kerusakan\b", "Kerusakan", regex=True
         )
-
-    # Pastikan jumlah_pole numerik
-    if "jumlah_pole" in df.columns:
-        df["jumlah_pole"] = pd.to_numeric(df["jumlah_pole"], errors="coerce").fillna(0)
 
     return df
 
 
 def encode_symptoms(df: pd.DataFrame) -> pd.DataFrame:
-    """Mengubah nilai 'Ya'/'Tidak' menjadi 1/0 pada kolom gejala."""
+    """Mengubah nilai 'YA'/'TIDAK' menjadi 1/0 pada kolom gejala (case-insensitive)."""
     for col in SYMPTOM_COLS:
         if col in df.columns:
-            df[col] = df[col].map({"Ya": 1, "Tidak": 0}).fillna(0).astype(int)
+            df[col] = (
+                df[col]
+                .astype(str)
+                .str.upper()
+                .str.strip()
+                .map({"YA": 1, "TIDAK": 0})
+                .fillna(0)
+                .astype(int)
+            )
     return df
 
 
 def fit_preprocessors(df: pd.DataFrame) -> dict:
     """
-    Membuat dan menyesuaikan (fit) LabelEncoder untuk kolom kategorikal.
-    StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
-    Returns:
-        label_encoders: dict {col_name: LabelEncoder} yang sudah di-fit
-    """
-    label_encoders = {}
-    for col in CATEGORICAL_COLS:
-        le = LabelEncoder()
-        le.fit(df[col].astype(str))
-        label_encoders[col] = le
+    Placeholder untuk menjaga kompatibilitas dengan train.py.
+    Dataset ini hanya memiliki kolom gejala biner — tidak ada
+    LabelEncoder yang perlu di-fit.
 
-    return label_encoders
+    Returns:
+        label_encoders: dict kosong {}
+    """
+    return {}
 
 
 def transform_features(df: pd.DataFrame, label_encoders: dict) -> pd.DataFrame:
     """
     Menerapkan transformasi pada fitur:
-    - Gejala: Ya/Tidak -> 1/0
-    - Numerik: dibiarkan asli (tanpa scaling)
-    - Kategorikal: LabelEncoder
+    - Gejala: YA/TIDAK -> 1/0 (case-insensitive)
+    - Tidak ada encoding kategorikal maupun scaling numerik.
     """
     df = encode_symptoms(df)
-
-    for col, le in label_encoders.items():
-        if col in df.columns:
-            df[col] = le.transform(df[col].astype(str))
-
     return df
 
 
 # =========================================================
-# OUTPUT (baris 130-148)
+# OUTPUT (baris 120-145)
 # Fungsi yang menghasilkan data siap prediksi dari input user:
 #   - preprocess_input() : menerima dict dari form, mengembalikan
 #                          DataFrame 1 baris siap masuk model RF
@@ -147,28 +132,15 @@ def preprocess_input(input_dict: dict, label_encoders: dict) -> pd.DataFrame:
     """
     Menerima satu baris input dari form user (dict),
     melakukan preprocessing, dan mengembalikan DataFrame siap-prediksi.
-    StandardScaler dihapus karena Random Forest tidak membutuhkan scaling.
+
+    Setiap nilai gejala diterima sebagai: "YA"/"ya"/"1"/True -> 1,
+    selain itu -> 0.
     """
     row = {}
 
-    # Gejala
     for col in SYMPTOM_COLS:
-        val = input_dict.get(col, "Tidak")
-        row[col] = 1 if str(val).lower() in ("ya", "1", "true") else 0
-
-    # Numerik (nilai asli, tanpa scaling)
-    for col in NUMERIC_COLS:
-        row[col] = float(input_dict.get(col, 0))
-
-    # Kategorikal
-    for col in CATEGORICAL_COLS:
-        raw = str(input_dict.get(col, ""))
-        le = label_encoders[col]
-        if raw in le.classes_:
-            row[col] = int(le.transform([raw])[0])
-        else:
-            row[col] = 0
+        val = input_dict.get(col, "TIDAK")
+        row[col] = 1 if str(val).upper().strip() in ("YA", "1", "TRUE") else 0
 
     df_input = pd.DataFrame([row], columns=FEATURE_COLS)
-
     return df_input

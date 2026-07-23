@@ -17,7 +17,7 @@ def identify():
         }), 400
 
     required_fields = [
-        "jenis_mesin", "daya", "jumlah_pole", "kecepatan_putaran_rpm"
+        "daya", "jumlah_pole", "kecepatan_putaran_rpm"
     ]
 
     missing_fields = [field for field in required_fields if field not in data or data[field] == "" or data[field] is None]
