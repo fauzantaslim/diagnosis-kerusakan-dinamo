@@ -91,7 +91,7 @@ def train():
         oob_score=True,
     )
     
-    # Ruang pencarian hyperparameter (dikurangi agar lebih cepat)
+    # Ruang pencarian hyperparameter
     param_grid = {
         'n_estimators': [50, 100, 150],
         'max_depth': [7, 10],

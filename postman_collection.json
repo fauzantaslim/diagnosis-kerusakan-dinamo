@@ -1,0 +1,399 @@
+{
+    "info": {
+        "name": "Diagnosis Kerusakan Dinamo API",
+        "description": "API Documentation untuk Sistem Pakar Diagnosis Kerusakan Dinamo dengan Random Forest Manual",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://127.0.0.1:5000",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "YOUR_TOKEN_HERE",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "1. Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nama_lengkap\": \"John Doe\",\n    \"username\": \"johndoe\",\n    \"password\": \"password123\",\n    \"confirm_password\": \"password123\"\n}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (201)",
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Registrasi berhasil! Selamat datang di sistem.\",\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5...\"\n}"
+                        },
+                        {
+                            "name": "Error - Password Mismatch (400)",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Password dan Konfirmasi Password tidak cocok.\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"johndoe\",\n    \"password\": \"password123\"\n}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Login berhasil.\",\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5...\",\n    \"user\": {\n        \"id\": 1,\n        \"username\": \"johndoe\",\n        \"nama_lengkap\": \"John Doe\"\n    }\n}"
+                        },
+                        {
+                            "name": "Error - Invalid Credentials (401)",
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Login gagal. Periksa kembali username dan password Anda.\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Current User (Me)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/auth/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"user\": {\n        \"id\": 1,\n        \"username\": \"johndoe\",\n        \"nama_lengkap\": \"John Doe\"\n    }\n}"
+                        },
+                        {
+                            "name": "Error - Unauthorized (401)",
+                            "status": "Unauthorized",
+                            "code": 401,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Token tidak ditemukan. Silakan login terlebih dahulu.\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/auth/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Logout berhasil.\",\n    \"redirect\": \"/auth/login\"\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "2. Diagnosis (Random Forest)",
+            "item": [
+                {
+                    "name": "Identify (Predict)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/diagnosis/identify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "diagnosis",
+                                "identify"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"suara_bising_abnormal\": \"Ya\",\n    \"bau_hangus\": \"Tidak\",\n    \"indikasi_overheating\": \"Ya\",\n    \"putaran_poros_seret\": \"Tidak\",\n    \"getaran_berlebih\": \"Ya\",\n    \"terminal_overheating\": \"Tidak\",\n    \"kipas_pendingin_rusak\": \"Tidak\",\n    \"cooling_duct_tersumbat\": \"Tidak\",\n    \"resistansi_isolasi_tidak_seimbang\": \"Ya\",\n    \"resistansi_winding_tidak_seimbang\": \"Ya\",\n    \"arus_antar_fasa_tidak_seimbang\": \"Ya\",\n    \"daya\": \"10\",\n    \"jumlah_pole\": \"4\",\n    \"kecepatan_putaran_rpm\": \"1450\"\n}"
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"diagnosis\": \"Kerusakan Bearing\",\n    \"confidence\": 0.76,\n    \"confidence_pct\": \"76.00%\",\n    \"session_id\": \"c1b5162c-84f5-4369-9480-7e0dc3c9a80c\",\n    \"calculation_detail\": {\n        \"n_trees\": 50,\n        \"n_training_samples\": 201,\n        \"majority_votes\": {\n            \"Kerusakan Bearing\": 38,\n            \"Kerusakan Shaft\": 12\n        }\n    }\n}"
+                        },
+                        {
+                            "name": "Error - No Symptoms (400)",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Validasi gagal: Mohon pilih minimal satu gejala yang teridentifikasi.\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Specific Tree Detail",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/rf/tree/:session_id/:tree_id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "rf",
+                                "tree",
+                                ":session_id",
+                                ":tree_id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "session_id",
+                                    "value": "YOUR_SESSION_ID"
+                                },
+                                {
+                                    "key": "tree_id",
+                                    "value": "0"
+                                }
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"tree_id\": 0,\n    \"vote\": \"Kerusakan Bearing\",\n    \"path_length\": 8,\n    \"nodes\": [\n        {\n            \"id\": \"1\",\n            \"data\": {\n                \"type\": \"decision\",\n                \"gini\": 0.7165\n            }\n        }\n    ],\n    \"edges\": [\n        {\n            \"id\": \"e1-2\",\n            \"source\": \"1\",\n            \"target\": \"2\"\n        }\n    ],\n    \"sampling_detail\": {\n        \"n_total\": 250,\n        \"bootstrap\": {\n            \"n_unique_samples\": 127\n        }\n    }\n}"
+                        },
+                        {
+                            "name": "Error - Session Expired (404)",
+                            "status": "Not Found",
+                            "code": 404,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Session tidak ditemukan atau sudah expired (10 menit). Lakukan prediksi ulang.\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get All Trees Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/rf/trees/:session_id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "rf",
+                                "trees",
+                                ":session_id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "session_id",
+                                    "value": "YOUR_SESSION_ID"
+                                }
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"n_trees\": 50,\n    \"diagnosis\": \"Kerusakan Bearing\",\n    \"majority_votes\": {\n        \"Kerusakan Bearing\": 38\n    },\n    \"votes\": [\n        {\n            \"tree_id\": 0,\n            \"vote\": \"Kerusakan Bearing\",\n            \"path_length\": 8\n        }\n    ]\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "3. History",
+            "item": [
+                {
+                    "name": "Get All History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/history/api?page=1&per_page=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "history",
+                                "api"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"data\": {\n        \"items\": [\n            {\n                \"id\": 1,\n                \"diagnosis\": \"Kerusakan Bearing\",\n                \"tanggal\": \"2026-08-07T00:00:00\"\n            }\n        ],\n        \"total\": 1,\n        \"page\": 1,\n        \"pages\": 1\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete History",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/history/api/:history_id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "history",
+                                "api",
+                                ":history_id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "history_id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "name": "Success (200)",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Riwayat berhasil dihapus.\"\n}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
