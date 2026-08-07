@@ -596,6 +596,14 @@ class RandomForest:
         unique_set   = set(indices)
         oob_indices  = [i for i in range(n) if i not in unique_set]
 
+        # Ambil sampel kecil (misal 5 baris pertama) untuk ditampilkan di UI
+        sample_rows = []
+        for i in range(min(5, len(X_boot))):
+            sample_rows.append({
+                "features": X_boot[i],
+                "label"   : y_boot[i],
+            })
+
         info = {
             "n_total_train"               : n,
             "n_bootstrap"                 : n,
@@ -605,6 +613,7 @@ class RandomForest:
             "oob_pct"                     : round(len(oob_indices) / n * 100, 1),
             "class_distribution_train"    : dict(Counter(y)),
             "class_distribution_bootstrap": dict(Counter(y_boot)),
+            "sample_rows"                 : sample_rows,
         }
         return X_boot, y_boot, info
 
