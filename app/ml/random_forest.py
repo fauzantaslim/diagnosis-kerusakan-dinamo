@@ -596,10 +596,11 @@ class RandomForest:
         unique_set   = set(indices)
         oob_indices  = [i for i in range(n) if i not in unique_set]
 
-        # Ambil sampel kecil (misal 5 baris pertama) untuk ditampilkan di UI
+        # Ambil semua sampel bootstrap
         sample_rows = []
-        for i in range(min(5, len(X_boot))):
+        for i in range(len(X_boot)):
             sample_rows.append({
+                "original_index": indices[i],
                 "features": X_boot[i],
                 "label"   : y_boot[i],
             })
@@ -736,10 +737,40 @@ def stratified_split(
     train_idx: List[int] = []
     test_idx:  List[int] = []
 
+    total_n = len(X)
+    target_n_test = int(total_n * test_size)
+    
+    # Tahap 1: Hitung kuota awal test untuk tiap kelas (dibulatkan ke bawah)
+    class_allocations = {}
+    remainders = []
+    
     for label, indices in class_indices.items():
         shuffled = indices[:]
         rng.shuffle(shuffled)
-        n_test = max(1, int(len(shuffled) * test_size))
+        
+        exact_test = len(shuffled) * test_size
+        n_test = int(exact_test)
+        
+        class_allocations[label] = {
+            'shuffled': shuffled,
+            'n_test': n_test
+        }
+        remainders.append((exact_test - n_test, label))
+        
+    # Tahap 2: Tambahkan sisa kuota ke kelas dengan remainder terbesar (Largest Remainder Method)
+    current_n_test = sum(alloc['n_test'] for alloc in class_allocations.values())
+    shortfall = target_n_test - current_n_test
+    
+    remainders.sort(key=lambda x: x[0], reverse=True)
+    for i in range(shortfall):
+        if i < len(remainders):
+            label = remainders[i][1]
+            class_allocations[label]['n_test'] += 1
+            
+    # Tahap 3: Masukkan ke index akhir
+    for label, alloc in class_allocations.items():
+        shuffled = alloc['shuffled']
+        n_test = alloc['n_test']
         test_idx.extend(shuffled[:n_test])
         train_idx.extend(shuffled[n_test:])
 
