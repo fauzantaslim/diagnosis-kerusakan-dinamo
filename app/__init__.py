@@ -21,6 +21,7 @@ def create_app(config_class=Config):
     from app.routes.history import history_bp
     from app.routes.dataset import dataset_bp
     from app.routes.rf import rf_bp
+    from app.routes.evaluation import evaluation_bp
 
     app.register_blueprint(auth_bp,       url_prefix='/auth')
     app.register_blueprint(dashboard_bp)
@@ -28,5 +29,6 @@ def create_app(config_class=Config):
     app.register_blueprint(history_bp,    url_prefix='/history')
     app.register_blueprint(dataset_bp,    url_prefix='/api/dataset')
     app.register_blueprint(rf_bp,         url_prefix='/api/rf')
+    app.register_blueprint(evaluation_bp, url_prefix='/api/evaluation')
 
     return app
