@@ -25,7 +25,7 @@ from app.ml.random_forest import (
 #                      expires_at }                                #
 # ================================================================ #
 _SESSION_CACHE: Dict[str, Dict] = {}
-_SESSION_TTL: int = 600  # 10 menit
+_SESSION_TTL: int = 3600  # 60 menit (1 jam)
 
 
 def _cleanup() -> None:
