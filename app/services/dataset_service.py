@@ -1,5 +1,6 @@
 import io
 import csv
+import openpyxl
 
 from app.models import db
 from app.models.dataset import Dataset
@@ -185,10 +186,6 @@ def import_from_file(file) -> dict:
         rows = list(reader)
 
     elif filename.endswith(('.xlsx', '.xls')):
-        try:
-            import openpyxl
-        except ImportError:
-            raise RuntimeError("openpyxl tidak terinstall. Jalankan: pip install openpyxl")
 
         wb = openpyxl.load_workbook(io.BytesIO(file.read()), data_only=True)
         ws = wb.active
