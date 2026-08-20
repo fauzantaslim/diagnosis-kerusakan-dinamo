@@ -1,5 +1,7 @@
+from collections import Counter
 from flask import request, jsonify
 from app.services import dataset_service
+from app.services.dataset_service import load_split_data
 
 
 def index():
@@ -111,6 +113,30 @@ def import_data():
         }), 200
 
     except (ValueError, RuntimeError) as e:
+        return jsonify({'success': False, 'message': str(e)}), 422
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+def split_info():
+    """GET /api/dataset/split-info — Info pembagian 80:20 training/testing."""
+    try:
+        X_train, X_test, y_train, y_test, X, y = load_split_data()
+
+        return jsonify({
+            'success'          : True,
+            'n_total'          : len(X),
+            'n_train'          : len(X_train),
+            'n_test'           : len(X_test),
+            'train_pct'        : round(len(X_train) / len(X) * 100, 1),
+            'test_pct'         : round(len(X_test)  / len(X) * 100, 1),
+            'class_dist_train' : dict(Counter(y_train)),
+            'class_dist_test'  : dict(Counter(y_test)),
+            'classes'          : sorted(set(y)),
+        }), 200
+
+    except ValueError as e:
         return jsonify({'success': False, 'message': str(e)}), 422
 
     except Exception as e:

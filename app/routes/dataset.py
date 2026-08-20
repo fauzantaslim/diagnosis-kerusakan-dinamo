@@ -6,7 +6,8 @@ dataset_bp = Blueprint('dataset_bp', __name__)
 # ------------------------------------------------------------------ #
 #  Import harus di atas CRUD agar /import tidak ditangkap /<int:id>  #
 # ------------------------------------------------------------------ #
-dataset_bp.route('/import', methods=['POST'])(dataset_controller.import_data)
+dataset_bp.route('/import',     methods=['POST'])(dataset_controller.import_data)
+dataset_bp.route('/split-info', methods=['GET'] )(dataset_controller.split_info)
 
 # CRUD
 dataset_bp.route('',          methods=['GET']   )(dataset_controller.index)
