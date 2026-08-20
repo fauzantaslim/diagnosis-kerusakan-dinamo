@@ -89,6 +89,7 @@ def identify():
         "confidence_pct"     : result["confidence_pct"],
         "probabilities"      : result["probabilities"],
         "feature_importances": result["feature_importances"],
+        "shap_detail"        : result.get("shap_detail"),
         "tree_votes"         : [
             {"tree_id": tv["tree_id"], "vote": tv["vote"], "path_length": tv["path_length"]}
             for tv in result["tree_votes"]

@@ -121,8 +121,8 @@ class DecisionTree:
 
     def __init__(
         self,
-        max_depth: int = 10,
-        min_samples_split: int = 2,
+        max_depth: int = 7,
+        min_samples_split: int = 5,
         max_features: Optional[int] = None,
         random_state: Optional[int] = None,
     ):
@@ -401,6 +401,73 @@ class DecisionTree:
         return prediction, path
 
     # ------------------------------------------------------------ #
+    #  Marginalized Predict (untuk SHAP manual)                    #
+    # ------------------------------------------------------------ #
+
+    def predict_marginalized(
+        self, x: List[int], known_features: set
+    ) -> Dict[str, float]:
+        """
+        Prediksi dengan marginalisasi fitur yang tidak diketahui.
+
+        Untuk fitur dalam `known_features`: ikuti cabang sesuai nilai x.
+        Untuk fitur di luar `known_features`: ikuti KEDUA cabang dengan
+        bobot proporsional (n_left/n_total dan n_right/n_total).
+
+        Args:
+            x: vektor input lengkap (11 × 0/1)
+            known_features: set index fitur yang diketahui
+
+        Returns:
+            Dict[str, float] — probabilitas per kelas
+        """
+        def _traverse_margin(node: Node) -> Dict[str, float]:
+            if node.is_leaf:
+                total = sum(node.class_counts.values())
+                if total == 0:
+                    return {}
+                return {
+                    cls: cnt / total
+                    for cls, cnt in node.class_counts.items()
+                }
+
+            if node.feature_index in known_features:
+                # Fitur diketahui → ikuti satu cabang
+                if x[node.feature_index] <= _THRESHOLD:
+                    return _traverse_margin(node.left)
+                else:
+                    return _traverse_margin(node.right)
+            else:
+                # Fitur tidak diketahui → ikuti kedua cabang
+                # dengan bobot berdasarkan jumlah sampel
+                n_total = node.n_left + node.n_right
+                if n_total == 0:
+                    total = sum(node.class_counts.values())
+                    if total == 0:
+                        return {}
+                    return {
+                        cls: cnt / total
+                        for cls, cnt in node.class_counts.items()
+                    }
+
+                w_left  = node.n_left  / n_total
+                w_right = node.n_right / n_total
+
+                left_probs  = _traverse_margin(node.left)
+                right_probs = _traverse_margin(node.right)
+
+                all_classes = set(
+                    list(left_probs.keys()) + list(right_probs.keys())
+                )
+                return {
+                    cls: w_left  * left_probs.get(cls, 0.0)
+                       + w_right * right_probs.get(cls, 0.0)
+                    for cls in all_classes
+                }
+
+        return _traverse_margin(self.root)
+
+    # ------------------------------------------------------------ #
     #  React Flow serialization                                     #
     # ------------------------------------------------------------ #
 
@@ -547,13 +614,13 @@ class DecisionTree:
 # ================================================================ #
 
 class RandomForest:
-    """Random Forest manual — 50 trees, majority voting."""
+    """Random Forest manual — 100 trees, majority voting."""
 
     def __init__(
         self,
-        n_estimators: int = 50,
-        max_depth: int = 10,
-        min_samples_split: int = 2,
+        n_estimators: int = 100,
+        max_depth: int = 7,
+        min_samples_split: int = 5,
         max_features: str = "sqrt",
         random_state: int = 42,
     ):
@@ -707,6 +774,163 @@ class RandomForest:
                 "n_features_total"    : len(fn),
                 "m_features_per_split": m,
                 "majority_votes"      : dict(vote_counts),
+            },
+        }
+
+    # ------------------------------------------------------------ #
+    #  SHAP Manual (Exact Shapley Values)                          #
+    # ------------------------------------------------------------ #
+
+    def _expected_prediction(
+        self, x: List[int], known_features: set, target_class: str
+    ) -> float:
+        """
+        Hitung E[f(x) | x_S] — rata-rata probabilitas `target_class`
+        dari semua tree, dengan hanya fitur di `known_features` yang
+        diketahui (sisanya di-marginalisasi).
+        """
+        total_prob = 0.0
+        for tree in self.trees:
+            probs = tree.predict_marginalized(x, known_features)
+            total_prob += probs.get(target_class, 0.0)
+        return total_prob / len(self.trees)
+
+    def compute_shap_values(
+        self,
+        x: List[int],
+        predicted_class: str,
+        feature_names: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Hitung exact Shapley values untuk input x.
+
+        Rumus:
+          φ(i) = Σ_{S ⊆ {1,...,p}\\{i}}
+                 [|S|! × (p-1-|S|)! / p!] × (e_{S∪{i}} - e_S)
+
+        Dengan p = 11 fitur, total evaluasi = 11 × 2^10 × 2 = 22.528.
+        Setiap evaluasi = rata-rata traversal dari seluruh tree.
+
+        Returns:
+            {
+              "predicted_class": str,
+              "base_value": float,
+              "prediction_value": float,
+              "shap_values": [
+                {
+                  "feature": str, "feature_index": int,
+                  "shap_value": float (signed),
+                  "abs_shap": float,
+                  "importance_pct": float
+                }, ...
+              ],
+              "validation": {
+                "base_plus_shap": float,
+                "prediction": float,
+                "difference": float,
+                "is_valid": bool
+              },
+              "calculation_info": {
+                "n_features": int,
+                "n_subsets_per_feature": int,
+                "n_trees": int,
+                "total_evaluations": int
+              }
+            }
+        """
+        fn = feature_names or FEATURE_NAMES
+        p = len(x)
+
+        # Base value: E[f(x)] tanpa fitur apapun yang diketahui
+        base_value = self._expected_prediction(x, set(), predicted_class)
+
+        # Prediksi aktual: semua fitur diketahui
+        all_features = set(range(p))
+        prediction_value = self._expected_prediction(
+            x, all_features, predicted_class
+        )
+
+        # Hitung φ(i) untuk setiap fitur
+        shap_vals: List[float] = []
+        feature_details: List[Dict] = []
+
+        # Pre-compute factorials
+        factorials = [math.factorial(k) for k in range(p + 1)]
+
+        for i in range(p):
+            other_features = [j for j in range(p) if j != i]
+            n_others = len(other_features)  # p - 1
+
+            phi_i = 0.0
+
+            # Enumerasi semua subset S ⊆ {0,...,p-1}\{i}
+            for mask in range(1 << n_others):
+                S = set()
+                for k in range(n_others):
+                    if mask & (1 << k):
+                        S.add(other_features[k])
+
+                s_size = len(S)
+
+                # Bobot Shapley: |S|! × (p-1-|S|)! / p!
+                weight = (
+                    factorials[s_size]
+                    * factorials[p - 1 - s_size]
+                    / factorials[p]
+                )
+
+                # e_{S∪{i}} - e_S
+                S_with_i = S | {i}
+                e_with = self._expected_prediction(
+                    x, S_with_i, predicted_class
+                )
+                e_without = self._expected_prediction(
+                    x, S, predicted_class
+                )
+                marginal = e_with - e_without
+
+                phi_i += weight * marginal
+
+            shap_vals.append(phi_i)
+
+        # Normalisasi ke persentase (berdasarkan |φ|)
+        abs_shap = [abs(v) for v in shap_vals]
+        total_abs = sum(abs_shap) or 1.0
+
+        for i in range(p):
+            feat_name = fn[i] if i < len(fn) else f"f{i}"
+            feature_details.append({
+                "feature"       : feat_name,
+                "feature_index" : i,
+                "shap_value"    : round(shap_vals[i], 6),
+                "abs_shap"      : round(abs_shap[i], 6),
+                "importance_pct": round(abs_shap[i] / total_abs * 100, 2),
+            })
+
+        # Urutkan berdasarkan |φ| terbesar
+        feature_details.sort(key=lambda d: d["abs_shap"], reverse=True)
+
+        # Validasi: base_value + Σ φ(i) ≈ prediction_value
+        sum_shap = sum(shap_vals)
+        reconstructed = base_value + sum_shap
+        diff = abs(reconstructed - prediction_value)
+
+        return {
+            "predicted_class" : predicted_class,
+            "base_value"      : round(base_value, 6),
+            "prediction_value": round(prediction_value, 6),
+            "shap_values"     : feature_details,
+            "validation"      : {
+                "base_plus_shap": round(reconstructed, 6),
+                "prediction"    : round(prediction_value, 6),
+                "difference"    : round(diff, 8),
+                "is_valid"      : diff < 1e-4,
+            },
+            "calculation_info": {
+                "n_features"           : p,
+                "n_subsets_per_feature" : 1 << (p - 1),
+                "n_trees"              : len(self.trees),
+                "total_evaluations"    : p * (1 << (p - 1)) * 2,
             },
         }
 

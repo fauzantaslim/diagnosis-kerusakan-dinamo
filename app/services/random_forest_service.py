@@ -4,7 +4,7 @@ Service layer untuk Random Forest manual.
 Alur:
   1. Load data training dari tabel datasets
   2. Stratified split 80:20 → 200 train, 50 test
-  3. Build RandomForest (50 trees, DFS, bootstrap dari 200 training)
+  3. Build RandomForest (100 trees, DFS, bootstrap dari 200 training)
   4. Predict dengan detail per-tree
   5. Simpan ke session cache (10 menit) untuk lazy-load tree detail
 """
@@ -80,9 +80,9 @@ def predict_with_detail(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Build forest dari training set
     rf = RandomForest(
-        n_estimators=50,
-        max_depth=10,
-        min_samples_split=2,
+        n_estimators=100,
+        max_depth=7,
+        min_samples_split=5,
         max_features="sqrt",
         random_state=42,
     )
@@ -90,6 +90,27 @@ def predict_with_detail(input_data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Predict dengan detail
     result = rf.predict_with_detail(input_x, feature_names=FEATURE_NAMES)
+
+    # Hitung SHAP (Exact Shapley Values) secara manual
+    shap_result = rf.compute_shap_values(
+        input_x,
+        result["diagnosis"],
+        feature_names=FEATURE_NAMES,
+    )
+
+    # Ganti feature_importances (MDI) dengan SHAP-based importances
+    result["feature_importances"] = [
+        {
+            "feature"       : sv["feature"],
+            "feature_index" : sv["feature_index"],
+            "importance"    : sv["importance_pct"],
+            "shap_value"    : sv["shap_value"],
+        }
+        for sv in shap_result["shap_values"]
+    ]
+
+    # Tambahkan shap_detail lengkap untuk detail perhitungan
+    result["shap_detail"] = shap_result
 
     # Simpan ke session cache
     _cleanup()
@@ -192,6 +213,7 @@ def get_session_votes(session_id: str) -> Dict[str, Any]:
         ],
         "majority_votes": detail["calculation_detail"]["majority_votes"],
         "split_info"    : session["split_info"],
+        "shap_detail"   : detail.get("shap_detail"),
     }
 
 
