@@ -10,8 +10,9 @@ def index():
         page     = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
         search   = request.args.get('search', '').strip()
+        split    = request.args.get('split', '').strip().lower()
 
-        result = dataset_service.get_all_datasets(page=page, per_page=per_page, search=search)
+        result = dataset_service.get_all_datasets(page=page, per_page=per_page, search=search, split_filter=split)
 
         return jsonify({
             'success'   : True,

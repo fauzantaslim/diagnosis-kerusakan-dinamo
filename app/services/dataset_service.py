@@ -107,12 +107,34 @@ def _validate_fields(data: dict, require_label: bool = True) -> dict:
 #  CRUD                                                                        #
 # --------------------------------------------------------------------------- #
 
-def get_all_datasets(page: int = 1, per_page: int = 20, search: str = ''):
-    """Ambil semua data dengan pagination dan opsional filter label."""
+def get_split_dataset_ids(test_size: float = 0.2, random_state: int = 42) -> Tuple[List[int], List[int]]:
+    """Helper untuk mendapatkan list ID dari data training dan testing (single source of truth)."""
+    datasets = Dataset.query.order_by(Dataset.id.asc()).all()
+    if not datasets:
+        return [], []
+    
+    # Kita hanya butuh ID dan label untuk dimasukkan ke stratified_split
+    ids = [d.id for d in datasets]
+    labels = [d.label for d in datasets]
+    
+    from app.ml.random_forest import stratified_split
+    train_ids, test_ids, _, _ = stratified_split(ids, labels, test_size=test_size, random_state=random_state)
+    return train_ids, test_ids
+
+
+def get_all_datasets(page: int = 1, per_page: int = 20, search: str = '', split_filter: str = ''):
+    """Ambil semua data dengan pagination dan opsional filter label & split (train/test)."""
     query = Dataset.query
 
     if search:
         query = query.filter(Dataset.label.ilike(f'%{search}%'))
+        
+    if split_filter in ('train', 'test'):
+        train_ids, test_ids = get_split_dataset_ids()
+        if split_filter == 'train':
+            query = query.filter(Dataset.id.in_(train_ids))
+        elif split_filter == 'test':
+            query = query.filter(Dataset.id.in_(test_ids))
 
     paginated = query.order_by(Dataset.id.asc()).paginate(
         page=page, per_page=per_page, error_out=False
