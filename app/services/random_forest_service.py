@@ -14,9 +14,9 @@ import uuid
 from typing import Dict, Any, Tuple, List, Optional
 from collections import Counter
 
-from app.models.dataset import Dataset
+from app.services.dataset_service import load_split_data
 from app.ml.random_forest import (
-    RandomForest, stratified_split, FEATURE_NAMES
+    RandomForest, FEATURE_NAMES
 )
 
 # ================================================================ #
@@ -35,15 +35,6 @@ def _cleanup() -> None:
         del _SESSION_CACHE[k]
 
 
-# ================================================================ #
-#  Load data                                                       #
-# ================================================================ #
-
-def load_training_data() -> Tuple[List[List[int]], List[str]]:
-    datasets = Dataset.query.all()
-    X = [[getattr(d, f) for f in FEATURE_NAMES] for d in datasets]
-    y = [d.label for d in datasets]
-    return X, y
 
 
 # ================================================================ #
@@ -61,12 +52,12 @@ def predict_with_detail(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     input_x = _parse_input(input_data)
 
-    X, y = load_training_data()
+    # Ambil data dari DB dan split 80:20 via dataset_service (single source of truth)
+    X_train, X_test, y_train, y_test, X, y = load_split_data()
     if len(X) < 10:
         raise ValueError("Dataset terlalu sedikit untuk training (minimal 10 data).")
 
-    # Stratified 80:20 split
-    X_train, X_test, y_train, y_test = stratified_split(X, y, test_size=0.2, random_state=42)
+    # Stratified 80:20 split sudah dilakukan oleh load_split_data()
 
     split_info = {
         "n_total"             : len(X),

@@ -3,10 +3,11 @@ import pandas as pd
 from typing import Dict, Any
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
 from app.models.dataset import Dataset
+from app.services.dataset_service import load_split_data
 from app.ml.feature_importance import plot_shap_summary
 
 def evaluate_model_pipeline() -> Dict[str, Any]:
@@ -19,25 +20,11 @@ def evaluate_model_pipeline() -> Dict[str, Any]:
     5. Hitung Feature Importance.
     """
     
-    # 1. Ambil dataset dari database
-    datasets = Dataset.query.all()
-    if len(datasets) < 10:
-        return {
-            "success": False,
-            "message": "Dataset terlalu sedikit (minimal 10 data) untuk melakukan evaluasi model."
-        }
-        
-    X = []
-    y = []
-    for d in datasets:
-        row = [getattr(d, col) for col in Dataset.FEATURE_COLUMNS]
-        X.append(row)
-        y.append(d.label)
-        
-    # 2. Split 80:20
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    # 1. Ambil dataset dari DB dan split 80:20 (via dataset_service — single source of truth)
+    try:
+        X_train, X_test, y_train, y_test, X, y = load_split_data()
+    except ValueError as exc:
+        return {"success": False, "message": str(exc)}
     
     # 3. GridSearchCV
     base_model = RandomForestClassifier(

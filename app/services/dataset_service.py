@@ -1,9 +1,11 @@
 import io
 import csv
 import openpyxl
+from typing import List, Tuple
 
 from app.models import db
 from app.models.dataset import Dataset
+from app.ml.random_forest import FEATURE_NAMES, stratified_split
 
 
 # --------------------------------------------------------------------------- #
@@ -164,6 +166,50 @@ def delete_dataset(dataset_id: int):
     db.session.delete(dataset)
     db.session.commit()
     return True
+
+
+# --------------------------------------------------------------------------- #
+#  Data Loading & Split                                                        #
+# --------------------------------------------------------------------------- #
+
+def load_split_data(
+    test_size: float = 0.2,
+    random_state: int = 42,
+) -> Tuple[List, List, List, List, List, List]:
+    """
+    Ambil seluruh dataset dari DB dan lakukan stratified split 80:20.
+
+    Ini adalah **single source of truth** untuk pembagian data training/testing.
+    Digunakan oleh ``random_forest_service`` (prediksi) dan
+    ``evaluation_service`` (evaluasi GridSearch), sehingga split selalu
+    konsisten dengan parameter yang sama.
+
+    Args:
+        test_size (float): Proporsi data test. Default ``0.2`` (20 %).
+        random_state (int): Seed untuk reproduktibilitas. Default ``42``.
+
+    Returns:
+        tuple: ``(X_train, X_test, y_train, y_test, X_all, y_all)``
+            - ``X_train`` / ``X_test`` : list of feature vectors (list[list[int]])
+            - ``y_train`` / ``y_test`` : list of label strings
+            - ``X_all`` / ``y_all``    : seluruh dataset (sebelum split)
+
+    Raises:
+        ValueError: Jika jumlah record di DB kurang dari 10.
+    """
+    datasets = Dataset.query.order_by(Dataset.id.asc()).all()
+    if len(datasets) < 10:
+        raise ValueError(
+            "Dataset terlalu sedikit (minimal 10 data) untuk melakukan split."
+        )
+
+    X = [[getattr(d, f) for f in FEATURE_NAMES] for d in datasets]
+    y = [d.label for d in datasets]
+
+    X_train, X_test, y_train, y_test = stratified_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+    return X_train, X_test, y_train, y_test, X, y
 
 
 # --------------------------------------------------------------------------- #
