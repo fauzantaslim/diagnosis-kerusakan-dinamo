@@ -113,12 +113,12 @@ def get_split_dataset_ids(test_size: float = 0.2, random_state: int = 42) -> Tup
     if not datasets:
         return [], []
     
-    # Kita hanya butuh ID dan label untuk dimasukkan ke stratified_split
+    # Kita hanya butuh ID dan label untuk dimasukkan ke train_test_split
     ids = [d.id for d in datasets]
     labels = [d.label for d in datasets]
     
-    from app.ml.random_forest import stratified_split
-    train_ids, test_ids, _, _ = stratified_split(ids, labels, test_size=test_size, random_state=random_state)
+    from sklearn.model_selection import train_test_split
+    train_ids, test_ids, _, _ = train_test_split(ids, labels, test_size=test_size, random_state=random_state, stratify=labels)
     return train_ids, test_ids
 
 
@@ -228,8 +228,9 @@ def load_split_data(
     X = [[getattr(d, f) for f in FEATURE_NAMES] for d in datasets]
     y = [d.label for d in datasets]
 
-    X_train, X_test, y_train, y_test = stratified_split(
-        X, y, test_size=test_size, random_state=random_state
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=y
     )
     return X_train, X_test, y_train, y_test, X, y
 
