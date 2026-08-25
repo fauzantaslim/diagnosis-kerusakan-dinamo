@@ -1,16 +1,16 @@
 from flask import request, jsonify
-from app.utils.jwt_utils import jwt_required, get_current_user_id
+from app.utils.jwt_utils import user_required, get_current_user_id
 from app.services import history_service
 
 
-@jwt_required
+@user_required
 def history_page():
     """Render halaman riwayat diagnosis (SSR)."""
     from flask import render_template
     return render_template('pages/app/history.html')
 
 
-@jwt_required
+@user_required
 def get_history():
     """Ambil riwayat diagnosis milik user yang sedang login."""
     try:
@@ -33,7 +33,7 @@ def get_history():
     return jsonify({"success": True, "data": data}), 200
 
 
-@jwt_required
+@user_required
 def get_history_detail(history_id: int):
     """Ambil detail satu record riwayat."""
     record = history_service.get_history_detail(history_id, get_current_user_id())
@@ -42,7 +42,7 @@ def get_history_detail(history_id: int):
     return jsonify({"success": True, "data": record.to_dict()}), 200
 
 
-@jwt_required
+@user_required
 def delete_history(history_id: int):
     """Hapus satu record riwayat."""
     deleted = history_service.delete_history(history_id, get_current_user_id())

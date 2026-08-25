@@ -1,18 +1,23 @@
 """
-JWT utility — generate & validate token, decorator jwt_required.
+JWT utility — generate & validate token, decorator jwt_required / admin_required.
 
 Token:
-  - Payload: sub (user_id), username, nama_lengkap, iat, exp
+  - Payload: sub (user_id), username, nama_lengkap, role, iat, exp
   - exp: 1 jam dari waktu issue
   - Algorithm: HS256
   - Secret: dari app.config['SECRET_KEY']
 
 Cara pakai di controller:
-  from app.utils.jwt_utils import jwt_required, get_current_user
+  from app.utils.jwt_utils import jwt_required, admin_required, get_current_user
 
   @jwt_required
   def my_view():
       user = get_current_user()  # User object
+      ...
+
+  @admin_required
+  def admin_only_view():
+      # Hanya bisa diakses oleh user dengan role 'admin'
       ...
 
 Token diterima dari:
@@ -46,6 +51,7 @@ def generate_token(user) -> str:
         "user_id"     : user.id,         # int copy untuk kemudahan
         "username"    : user.username,
         "nama_lengkap": user.nama_lengkap,
+        "role"        : getattr(user, 'role', 'user'),
         "iat"         : now,
         "exp"         : now + timedelta(hours=1),
     }
@@ -112,12 +118,54 @@ def jwt_required(f):
             return _unauthorized("Token tidak valid.")
 
         # Simpan payload ke flask.g
-        g.jwt_payload     = payload
-        g.current_user_id = payload.get("user_id") or int(payload["sub"])
+        g.jwt_payload        = payload
+        g.current_user_id    = payload.get("user_id") or int(payload["sub"])
+        g.current_user_role  = payload.get("role", "user")
 
         return f(*args, **kwargs)
 
     return decorated
+
+
+def admin_required(f):
+    """
+    Decorator: pastikan request memiliki JWT yang valid DAN role == 'admin'.
+    Gunakan sebagai pengganti @jwt_required untuk endpoint admin-only.
+
+    Returns 403 JSON / redirect jika user bukan admin.
+    """
+    @wraps(f)
+    @jwt_required
+    def decorated(*args, **kwargs):
+        role = getattr(g, "current_user_role", "user")
+        if role != "admin":
+            return _forbidden("Akses ditolak. Hanya admin yang dapat melakukan aksi ini.")
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def user_required(f):
+    """
+    Decorator: pastikan request memiliki JWT yang valid DAN role == 'user' (bukan admin).
+    Gunakan untuk endpoint yang hanya boleh diakses oleh user biasa (identify, history, dll).
+
+    Returns 403 JSON jika yang mengakses adalah admin.
+    """
+    @wraps(f)
+    @jwt_required
+    def decorated(*args, **kwargs):
+        role = getattr(g, "current_user_role", "user")
+        if role == "admin":
+            return _forbidden("Akses ditolak. Admin tidak dapat menggunakan fitur ini.")
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def _forbidden(message: str):
+    """Kembalikan 403."""
+    return jsonify({"success": False, "message": message}), 403
 
 
 def _unauthorized(message: str):
@@ -153,6 +201,11 @@ def get_current_user():
 def get_current_user_id() -> int | None:
     """Ambil user_id dari JWT payload tanpa query DB."""
     return getattr(g, "current_user_id", None)
+
+
+def get_current_user_role() -> str:
+    """Ambil role user dari JWT payload tanpa query DB. Default 'user'."""
+    return getattr(g, "current_user_role", "user")
 
 
 def get_jwt_payload() -> dict:

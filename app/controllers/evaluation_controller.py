@@ -1,9 +1,9 @@
 import os
 from flask import jsonify, send_from_directory
-from app.utils.jwt_utils import jwt_required
+from app.utils.jwt_utils import admin_required, jwt_required
 from app.services.evaluation_service import evaluate_model_pipeline
 
-@jwt_required
+@admin_required
 def run_evaluation():
     """
     GET /api/evaluation/run
@@ -21,6 +21,7 @@ def run_evaluation():
             "message": f"Terjadi kesalahan saat pengujian model: {str(e)}"
         }), 500
 
+@jwt_required
 def serve_shap_plot():
     """
     GET /api/evaluation/shap-plot

@@ -23,6 +23,7 @@ def login():
                 "id"          : user.id,
                 "username"    : user.username,
                 "nama_lengkap": user.nama_lengkap,
+                "role"        : user.role,
             },
         }), 200)
         resp.set_cookie(
@@ -87,5 +88,6 @@ def me():
             "id"          : payload.get("sub"),
             "username"    : payload.get("username"),
             "nama_lengkap": payload.get("nama_lengkap"),
+            "role"        : payload.get("role", "user"),
         },
     }), 200

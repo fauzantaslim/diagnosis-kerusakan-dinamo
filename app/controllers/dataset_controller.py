@@ -2,8 +2,10 @@ from collections import Counter
 from flask import request, jsonify
 from app.services import dataset_service
 from app.services.dataset_service import load_split_data
+from app.utils.jwt_utils import jwt_required, admin_required
 
 
+@jwt_required
 def index():
     """GET /api/dataset — List semua dataset dengan pagination dan search."""
     try:
@@ -24,6 +26,7 @@ def index():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@admin_required
 def store():
     """POST /api/dataset — Buat satu data baru."""
     data = request.get_json(silent=True) or request.form.to_dict()
@@ -46,6 +49,7 @@ def store():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@jwt_required
 def show(dataset_id):
     """GET /api/dataset/<id> — Detail satu data."""
     dataset = dataset_service.get_dataset_by_id(dataset_id)
@@ -56,6 +60,7 @@ def show(dataset_id):
     return jsonify({'success': True, 'data': dataset.to_dict()}), 200
 
 
+@admin_required
 def update(dataset_id):
     """PUT /api/dataset/<id> — Update satu data."""
     data = request.get_json(silent=True) or request.form.to_dict()
@@ -82,6 +87,7 @@ def update(dataset_id):
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@admin_required
 def destroy(dataset_id):
     """DELETE /api/dataset/<id> — Hapus satu data."""
     deleted = dataset_service.delete_dataset(dataset_id)
@@ -92,6 +98,7 @@ def destroy(dataset_id):
     return jsonify({'success': True, 'message': 'Data berhasil dihapus.'}), 200
 
 
+@admin_required
 def import_data():
     """POST /api/dataset/import — Import data dari file CSV atau XLSX."""
     if 'file' not in request.files:
@@ -120,6 +127,7 @@ def import_data():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+@jwt_required
 def split_info():
     """GET /api/dataset/split-info — Info pembagian 80:20 training/testing."""
     try:

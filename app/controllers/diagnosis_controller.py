@@ -1,5 +1,5 @@
 from flask import request, jsonify, render_template
-from app.utils.jwt_utils import jwt_required, get_current_user_id
+from app.utils.jwt_utils import user_required, get_current_user_id
 from app.services import random_forest_service, history_service
 
 
@@ -8,12 +8,12 @@ def identify_page():
     return render_template('pages/app/identify.html')
 
 
-@jwt_required
+@user_required
 def identify():
     """
     POST /diagnosis/identify
     Mendiagnosis kerusakan dinamo menggunakan Random Forest manual.
-    Membutuhkan JWT yang valid.
+    Hanya untuk user biasa (bukan admin).
     """
     data = request.get_json(silent=True) or request.form.to_dict()
 
