@@ -79,7 +79,13 @@ def _validate_fields(data: dict, require_label: bool = True) -> dict:
     if 'daya' in data:
         result['daya'] = float(data['daya']) if data['daya'] not in (None, '') else None
     if 'jumlah_pole' in data:
-        result['jumlah_pole'] = int(data['jumlah_pole']) if data['jumlah_pole'] not in (None, '') else None
+        if data['jumlah_pole'] in (None, ''):
+            result['jumlah_pole'] = None
+        else:
+            jp = int(data['jumlah_pole'])
+            if jp < 2 or jp > 8 or jp % 2 != 0:
+                raise ValueError("Validasi gagal: Jumlah Pole harus genap antara 2 hingga 8.")
+            result['jumlah_pole'] = jp
 
     feature_fields = [
         'suara_bising_abnormal', 'bau_hangus', 'indikasi_overheating',

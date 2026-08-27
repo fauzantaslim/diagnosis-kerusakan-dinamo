@@ -82,6 +82,17 @@ def predict_with_detail(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # Predict dengan detail
     result = rf.predict_with_detail(input_x, feature_names=FEATURE_NAMES)
 
+    # Tambahkan path gambar diagnosis
+    diagnosis_label = result.get("diagnosis", "").strip().lower()
+    image_map = {
+        "kerusakan bearing": "/static/images/kerusakan_bearing.jpeg",
+        "kerusakan gulungan stator": "/static/images/kerusakan_gulungan_stator.jpeg",
+        "kerusakan housing bearing": "/static/images/kerusakan_housing_bearing.jpeg",
+        "kerusakan shaft": "/static/images/kerusakan_shaft.jpeg",
+        "kerusakan terminal": "/static/images/kerusakan_terminal.jpeg"
+    }
+    result["diagnosis_image"] = image_map.get(diagnosis_label)
+
     # Hitung SHAP (Exact Shapley Values) secara manual
     shap_result = rf.compute_shap_values(
         input_x,

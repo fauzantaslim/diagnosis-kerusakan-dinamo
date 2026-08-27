@@ -46,15 +46,28 @@ def identify():
     if jumlah_pole_raw not in ("", None):
         try:
             jp = int(jumlah_pole_raw)
-            if jp < 2:
+            if jp < 2 or jp > 8:
                 return jsonify({
                     "success": False,
-                    "message": "Validasi gagal: Jumlah Pole harus minimal 2.",
+                    "message": "Validasi gagal: Jumlah Pole harus antara 2 hingga 8.",
                 }), 400
             if jp % 2 != 0:
                 return jsonify({
                     "success": False,
-                    "message": "Validasi gagal: Jumlah Pole harus genap (2, 4, 6, 8, ...).",
+                    "message": "Validasi gagal: Jumlah Pole harus genap (2, 4, 6, 8).",
+                }), 400
+        except (ValueError, TypeError):
+            pass
+
+    # Validasi RPM (opsional)
+    rpm_raw = data.get("kecepatan_putaran_rpm", "")
+    if rpm_raw not in ("", None):
+        try:
+            rpm = int(rpm_raw)
+            if rpm < 500 or rpm > 3000:
+                return jsonify({
+                    "success": False,
+                    "message": "Validasi gagal: RPM harus antara 500 hingga 3000.",
                 }), 400
         except (ValueError, TypeError):
             pass
@@ -85,6 +98,7 @@ def identify():
     return jsonify({
         "success"            : True,
         "diagnosis"          : result["diagnosis"],
+        "diagnosis_image"    : result.get("diagnosis_image"),
         "confidence"         : result["confidence"],
         "confidence_pct"     : result["confidence_pct"],
         "probabilities"      : result["probabilities"],
