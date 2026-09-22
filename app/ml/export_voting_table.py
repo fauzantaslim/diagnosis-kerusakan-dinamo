@@ -1,4 +1,4 @@
-﻿"""
+"""
 Export Tabel Voting Mayoritas per Pohon Keputusan.
 
 Kolom output:
@@ -54,13 +54,28 @@ FEAT_DISPLAY = {
     "arus_antar_fasa_tidak_seimbang":    "Arus Antar Fasa Tidak Seimbang",
 }
 
+# Mapping label → kode kategori numerik
+# 0: Kerusakan Bearing
+# 1: Kerusakan Gulungan Stator
+# 2: Kerusakan Housing Bearing
+# 3: Kerusakan Shaft
+# 4: Kerusakan Terminal
 LABEL_ABBREV = {
-    "Kerusakan Bearing":         "Bearing",
-    "Kerusakan Gulungan Stator": "Gulungan",
-    "Kerusakan Housing Bearing": "Housing",
-    "Kerusakan Shaft":           "Shaft",
-    "Kerusakan Terminal":        "Terminal",
+    "Kerusakan Bearing":         "0",
+    "Kerusakan Gulungan Stator": "1",
+    "Kerusakan Housing Bearing": "2",
+    "Kerusakan Shaft":           "3",
+    "Kerusakan Terminal":        "4",
 }
+
+# Keterangan lengkap untuk sheet legend
+LABEL_LEGEND = [
+    ("0", "Kerusakan Bearing"),
+    ("1", "Kerusakan Gulungan Stator"),
+    ("2", "Kerusakan Housing Bearing"),
+    ("3", "Kerusakan Shaft"),
+    ("4", "Kerusakan Terminal"),
+]
 
 
 def _abbrev(label):
@@ -193,6 +208,32 @@ def export_to_excel(df_table, output_path, n_shown):
 
         ws.row_dimensions[1].height = 40
         ws.freeze_panes = f"{get_column_letter(3)}2"
+
+        # --- Sheet Keterangan Kelas ---
+        ws_legend = writer.book.create_sheet(title="Keterangan Kelas")
+        legend_headers = ["Kode", "Kelas / Label"]
+        ws_legend.append(legend_headers)
+
+        for code, label in LABEL_LEGEND:
+            ws_legend.append([code, label])
+
+        # Style legend
+        fill_lg_head = PatternFill("solid", fgColor="1F4E79")
+        for col_idx in range(1, 3):
+            cell           = ws_legend.cell(row=1, column=col_idx)
+            cell.fill      = fill_lg_head
+            cell.font      = Font(color="FFFFFF", bold=True, size=10)
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border    = thin
+        for row_idx in range(2, 2 + len(LABEL_LEGEND)):
+            for col_idx in range(1, 3):
+                cell           = ws_legend.cell(row=row_idx, column=col_idx)
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+                cell.border    = thin
+                cell.font      = Font(size=10)
+        ws_legend.column_dimensions["A"].width = 8
+        ws_legend.column_dimensions["B"].width = 30
+        ws_legend.row_dimensions[1].height = 20
 
     print(f"  File disimpan ke: {output_path}")
 
